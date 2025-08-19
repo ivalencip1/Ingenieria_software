@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import MagBoost from './MagBoost.png';  //importamos imagen
 
 function App() {
   const [backendMessage, setBackendMessage] = useState("");
@@ -13,7 +14,8 @@ function App() {
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Hola Mundo desde el Frontend</h1>
+      <img src={MagBoost} alt="Logo MagBoost" style={{ width: "150px", marginBottom: "20px" }} />
+      <h1>Hello World desde el Frontend de MagBoost</h1>
       <h2>Mensaje desde backend: {backendMessage}</h2>
     </div>
   );
