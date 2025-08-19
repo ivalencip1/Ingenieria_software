@@ -1,6 +1,6 @@
 import express from "express";
-import cors from "cors";
-import path from "path";
+import cors from "cors";  //permite peticiones desde otros origenes
+import path from "path";  //importa utilidades
 import { fileURLToPath } from "url";
 
 const app = express();
