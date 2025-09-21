@@ -103,3 +103,45 @@ def progreso_semanal(request):
         'fin_semana': fin_semana
     })
 
+@api_view(['GET'])
+def todas_las_misiones(request):
+    """Obtener todas las misiones organizadas por tipo"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    # Obtener misiones completadas por el usuario
+    misiones_completadas = MisionUsuario.objects.filter(
+        usuario=usuario,
+        completada=True
+    ).values_list('mision_id', flat=True)
+    
+    # Organizar misiones por tipo usando TIPO_CHOICES del modelo
+    misiones_por_tipo = {
+        'diaria': [],
+        'semanal': [],
+        'mensual': []
+    }
+    
+    # Obtener misiones por cada tipo
+    for tipo_key, tipo_label in Mision.TIPO_CHOICES:
+        misiones = Mision.objects.filter(tipo=tipo_key, activa=True)
+        
+        for mision in misiones:
+            misiones_por_tipo[tipo_key].append({
+                'id': mision.id,
+                'titulo': mision.titulo,
+                'descripcion': mision.descripcion,
+                'puntos_recompensa': mision.puntos_recompensa,
+                'icono': mision.icono,  # Usar icono del modelo
+                'completada': mision.id in misiones_completadas,
+                'estado': 'Completado' if mision.id in misiones_completadas else 'Pendiente'
+            })
+    
+    return Response({
+        'retos_diarios': misiones_por_tipo['diaria'],
+        'retos_semanales': misiones_por_tipo['semanal'],
+        'retos_mensuales': misiones_por_tipo['mensual']
+    })
+
