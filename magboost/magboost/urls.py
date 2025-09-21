@@ -20,7 +20,7 @@ from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
 
 # Importa los ViewSets de cada app
-from core.views import PerfilUsuarioViewSet
+from core.views import PerfilUsuarioViewSet, perfil_usuario
 
 # from gamification.views import PuntoViewSet, InsigniaViewSet, MisionViewSet, RankingViewSet
 # from rewards.views import RecompensaViewSet, TiendaViewSet, MentoriaViewSet, RuletaViewSet
@@ -37,11 +37,19 @@ def api_root(request):
             'admin': '/admin/',
             'api': '/api/',
             'usuarios': '/api/usuarios/',
+            'perfil': '/api/core/perfil/',
+            'misiones': '/api/gamification/misiones/',
+            'progreso': '/api/gamification/progreso/',
+            'ruleta': '/api/rewards/ruleta/',
+            'ranking': '/api/rewards/ranking/',
         }
     })
 
 # Core
+router = DefaultRouter()
 router.register(r'usuarios', PerfilUsuarioViewSet)
+
+
 
 
 # Gamification
@@ -70,7 +78,10 @@ router.register(r'usuarios', PerfilUsuarioViewSet)
 # router.register(r'mocks', MockRespuestaViewSet)
 
 urlpatterns = [
-    path('', api_root, name='api-root'),  # Nueva ruta raíz
+    path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),  # toda la API entra por /api/
+    path('api/', include(router.urls)),
+    path('api/core/', include('core.urls')),
+    path('api/gamification/', include('gamification.urls')),
+    path('api/rewards/', include('rewards.urls')),
 ]
