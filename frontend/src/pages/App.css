@@ -1,0 +1,198 @@
+/* ========== ESTILOS GLOBALES ========== */
+.App {
+  text-align: center;
+}
+
+/* ========== PROGRESO SEMANAL ========== */
+.progreso-container {
+  margin: 20px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.progreso-header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.progreso-title {
+  margin: 0 0 5px 0;
+  color: #333;
+}
+
+.progreso-stats {
+  font-size: 18px;
+  font-weight: bold;
+  color: #FF6B35;
+}
+
+.progreso-racha {
+  margin-left: 10px;
+  background: #FF6B35;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.progreso-barra-container {
+  position: relative;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progreso-barra-fondo {
+  width: 100%;
+  height: 25px;
+  background: #f0f0f0;
+  border-radius: 12px;
+  border: 2px solid #d4af37;
+  overflow: hidden;
+}
+
+.progreso-barra-fill {
+  height: 100%;
+  background: linear-gradient(45deg, #FFD700, #FF6B35);
+  border-radius: 10px;
+  transition: width 0.5s ease-in-out;
+}
+
+.progreso-estrella {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.progreso-mensaje {
+  color: #666;
+  padding: 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.progreso-porcentaje {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.progreso-porcentaje.completo {
+  color: #4CAF50;
+}
+
+.progreso-porcentaje.incompleto {
+  color: #FF6B35;
+}
+
+/* ========== RETOS DEL DÍA ========== */
+.retos-container h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.retos-mision {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.retos-mision p {
+  margin: 0 0 10px 0;
+  color: #555;
+}
+
+.retos-btn {
+  background: #FF6B35;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.retos-btn:hover {
+  background: #e55a2b;
+}
+
+.retos-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========== PANTALLA DE CARGA MAGNÉTICA ========== */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  color: white;
+}
+
+.loading-magnet {
+  font-size: 60px;
+  animation: spin 2s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loading-title {
+  margin: 0 0 10px 0;
+}
+
+.loading-subtitle {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.loading-dots {
+  margin-top: 20px;
+  display: flex;
+  gap: 5px;
+}
+
+.loading-dot {
+  width: 10px;
+  height: 10px;
+  background: #FF6B35;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 80%, 100% { 
+    transform: scale(0); 
+    opacity: 1; 
+  }
+  40% { 
+    transform: scale(1); 
+    opacity: 0; 
+  }
+}

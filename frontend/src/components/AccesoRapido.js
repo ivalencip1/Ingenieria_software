@@ -25,7 +25,7 @@ function AccesoRapido() {
   const botones = [
     {titulo: 'Vacantes recomendadas', icono: '✅', color: '#FFB74D', onClick: () => alert('Vacantes')},
     {titulo: 'Ruleta diaria', icono: '🎯', color: '#4DB6AC', onClick: puedeGirar ? girarRuleta : null},
-    {titulo: 'Ranking de usuarios', icono: '⭐', color: '#42A5F5', onClick: () => alert('Ranking')}
+    {titulo: 'Ranking de usuarios', icono: '⭐', color: '#42A5F5', onClick: () => alert('Sorry, en construccion')}
   ];
 
   return (

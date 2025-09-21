@@ -6,6 +6,7 @@ import RetosDia from "../components/RetosDia";
 import ProgresoSemanal from "../components/ProgresoSemanal";
 import AccesoRapido from "../components/AccesoRapido";
 import MisionesPage from './MisionesPage';
+import './App.css';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);

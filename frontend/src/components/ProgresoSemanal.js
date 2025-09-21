@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../pages/App.css';
 
 function ProgresoSemanal() {
   const [progreso, setProgreso] = useState({});
@@ -10,25 +11,55 @@ function ProgresoSemanal() {
       .catch(err => console.error(err));
   }, []);
 
+  // Mensajes motivadores según porcentaje
+  const obtenerMensaje = (porcentaje) => {
+    if (porcentaje === 0) return "🌟 ¡Comienza tu aventura magnética!";
+    if (porcentaje <= 25) return "🚀 ¡Buen comienzo!";
+    if (porcentaje <= 50) return "⚡ ¡Excelente progreso!";
+    if (porcentaje <= 75) return "🔥 ¡Vas genial!";
+    if (porcentaje < 100) return "🏆 ¡Casi lo logras!";
+    return "🎉 ¡MISIÓN CUMPLIDA!";
+  };
+
+  const porcentaje = progreso.progreso_porcentaje || 0;
+  const completadas = progreso.misiones_completadas || 0;
+  const total = progreso.meta_semanal || 5;
+
   return (
-    <div>
-      <h3>Progreso de metas semanales</h3>
+    <div className="progreso-container">
       
-      {/* RACHA CON FUEGO */}
-      {progreso.racha_activa ? (
-        <span>🔥 ¡Racha activa!</span>
-      ) : (
-        <span>💤 Sin racha</span>
-      )}
-      
-      {/* BARRA DE PROGRESO */}
-      <div style={{
-        width: `${progreso.progreso_porcentaje || 0}%`,
-        height: '10px',
-        background: 'linear-gradient(90deg, #FF6B35, #F7931E)'
-      }}></div>
-      
-      <p>{progreso.misiones_completadas || 0} de {progreso.meta_semanal || 5} misiones</p>
+      {/* Título y progreso */}
+      <div className="progreso-header">
+        <h3 className="progreso-title">Progreso Semanal</h3>
+        <span className="progreso-stats">
+          {completadas} de {total} misiones
+        </span>
+      </div>
+
+      {/* Barra de progreso minimalista */}
+      <div className="progreso-barra-container">
+        {/* Estrella al lado izquierdo */}
+        <div className="progreso-estrella">
+          ⭐
+        </div>
+        
+        <div className="progreso-barra-fondo">
+          <div 
+            className="progreso-barra-fill"
+            style={{width: `${porcentaje}%`}}
+          ></div>
+        </div>
+      </div>
+
+      {/* Mensaje motivador */}
+      <div className="progreso-mensaje">
+        {obtenerMensaje(porcentaje)}
+      </div>
+
+      {/* Porcentaje */}
+      <div className={`progreso-porcentaje ${porcentaje === 100 ? 'completo' : 'incompleto'}`}>
+        {porcentaje.toFixed(0)}%
+      </div>
     </div>
   );
 }
