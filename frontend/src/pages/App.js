@@ -5,12 +5,13 @@ import UserHeader from "../components/UserHeader";
 import RetosDia from "../components/RetosDia";
 import ProgresoSemanal from "../components/ProgresoSemanal";
 import AccesoRapido from "../components/AccesoRapido";
+import MisionesPage from './MisionesPage';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [vistaActual, setVistaActual] = useState('home'); // 'home' o 'usuarios'
+const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones'
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -81,6 +82,19 @@ function App() {
         >
           👥 Usuarios
         </button>
+        <button 
+          onClick={() => cambiarVista('misiones')}
+          style={{
+            padding: '8px 16px',
+            background: vistaActual === 'misiones' ? '#667eea' : '#f0f0f0',
+            color: vistaActual === 'misiones' ? 'white' : '#333',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          📋 Misiones
+        </button>
       </nav>
 
       {/* Contenido según la vista */}
@@ -106,6 +120,10 @@ function App() {
             </ul>
           )}
         </div>
+      )}
+
+      {vistaActual === 'misiones' && (
+        <MisionesPage onVolver={() => setVistaActual('home')} />
       )}
     </div>
   );

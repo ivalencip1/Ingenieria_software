@@ -11,7 +11,7 @@ function RetosDia() {
   }, []);
 
   const completarMision = (misionId) => {
-    fetch(`http://localhost:8000/api/gamification/completar/${misionId}/`, {
+    fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
       method: 'POST'
     })
     .then(res => res.json())
@@ -19,6 +19,10 @@ function RetosDia() {
       alert(`¡+${data.puntos_ganados} puntos!`);
       // Recargar misiones
       window.location.reload();
+    })
+    .catch(err => {
+      console.error('Error:', err);
+      alert('Error al completar misión');
     });
   };
 
