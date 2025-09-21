@@ -15,8 +15,62 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.http import JsonResponse
+from rest_framework.routers import DefaultRouter
+
+# Importa los ViewSets de cada app
+from core.views import PerfilUsuarioViewSet
+
+# from gamification.views import PuntoViewSet, InsigniaViewSet, MisionViewSet, RankingViewSet
+# from rewards.views import RecompensaViewSet, TiendaViewSet, MentoriaViewSet, RuletaViewSet
+# from social.views import InvitacionViewSet, CompartirOfertaViewSet
+# from notifications.views import NotificacionViewSet, TipViewSet, RecordatorioViewSet
+# from magnetosimulator.views import TareaMagnetoViewSet, MockRespuestaViewSet
+
+router = DefaultRouter()
+
+def api_root(request):
+    return JsonResponse({
+        'message': 'Bienvenido a MAGBOOST API',
+        'endpoints': {
+            'admin': '/admin/',
+            'api': '/api/',
+            'usuarios': '/api/usuarios/',
+        }
+    })
+
+# Core
+router.register(r'usuarios', PerfilUsuarioViewSet)
+
+
+# Gamification
+# router.register(r'puntos', PuntoViewSet)
+# router.register(r'insignias', InsigniaViewSet)
+# router.register(r'misiones', MisionViewSet)
+# router.register(r'ranking', RankingViewSet)
+
+# Rewards
+# router.register(r'recompensas', RecompensaViewSet)
+# router.register(r'tienda', TiendaViewSet)
+# router.register(r'mentorias', MentoriaViewSet)
+# router.register(r'ruleta', RuletaViewSet)
+
+# Social
+# router.register(r'invitaciones', InvitacionViewSet)
+# router.register(r'ofertas', CompartirOfertaViewSet)
+
+# Notifications
+# router.register(r'notificaciones', NotificacionViewSet)
+# router.register(r'tips', TipViewSet)
+# router.register(r'recordatorios', RecordatorioViewSet)
+
+# Magnetosim
+# router.register(r'tareas-magneto', TareaMagnetoViewSet)
+# router.register(r'mocks', MockRespuestaViewSet)
 
 urlpatterns = [
+    path('', api_root, name='api-root'),  # Nueva ruta raíz
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),  # toda la API entra por /api/
 ]
