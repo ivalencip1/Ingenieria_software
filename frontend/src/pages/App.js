@@ -6,13 +6,14 @@ import RetosDia from "../components/RetosDia";
 import ProgresoSemanal from "../components/ProgresoSemanal";
 import AccesoRapido from "../components/AccesoRapido";
 import MisionesPage from './MisionesPage';
+import TiendaRecompensas from './TiendaRecompensas';
 import './App.css';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones'
+const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda'
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -96,6 +97,19 @@ const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', '
         >
           📋 Misiones
         </button>
+        <button 
+          onClick={() => cambiarVista('tienda')}
+          style={{
+            padding: '8px 16px',
+            background: vistaActual === 'tienda' ? '#667eea' : '#f0f0f0',
+            color: vistaActual === 'tienda' ? 'white' : '#333',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer'
+          }}
+        >
+          🛍️ Tienda
+        </button>
       </nav>
 
       {/* Contenido según la vista */}
@@ -126,6 +140,36 @@ const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', '
       {vistaActual === 'misiones' && (
         <MisionesPage onVolver={() => setVistaActual('home')} />
       )}
+
+      {vistaActual === 'tienda' && (
+        <TiendaRecompensas onVolver={() => setVistaActual('home')} />
+      )}
+
+      {/* Botón flotante Magneto - Global */}
+      <div 
+        onClick={() => window.open('https://www.magneto365.com/es', '_blank')}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '60px',
+          height: '60px',
+          background: '#28a745',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          fontSize: '28px',
+          color: 'white',
+          fontWeight: 'bold',
+          zIndex: 1000,
+          textAlign: 'center',
+          lineHeight: '60px'
+        }}
+      >
+        m
+      </div>
     </div>
   );
 }
