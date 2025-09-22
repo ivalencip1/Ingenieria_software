@@ -69,19 +69,45 @@ function RetosDia() {
 
   return (
     <div className="retos-container">
-      <h3>Retos del día</h3>
-      {misiones.map(mision => (
-        <div key={mision.id} className="retos-mision">
-          <p>{mision.titulo}</p>
+      <h3 style={{ textAlign: 'center' }}>Retos del día</h3>
+      {misiones.length > 0 && (
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '15px 20px',
+          background: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          margin: '10px 0'
+        }}>
+          <span style={{
+            fontSize: '14px',
+            color: '#333',
+            fontWeight: '500'
+          }}>
+            {misiones[0].titulo}
+          </span>
           <button 
-            onClick={() => completarMision(mision.id)}
-            disabled={cargando}
-            className="retos-btn"
+            onClick={() => completarMision(misiones[0].id)}
+            disabled={cargando || misionCargando === misiones[0].id}
+            style={{
+              background: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'background 0.2s',
+              opacity: (cargando || misionCargando === misiones[0].id) ? 0.6 : 1
+            }}
           >
-            Completar (+{mision.puntos_recompensa} pts)
+            {(cargando || misionCargando === misiones[0].id) ? 'Procesando...' : `+${misiones[0].puntos_recompensa} pts`}
           </button>
         </div>
-      ))}
+      )}
     </div>
   );
 }

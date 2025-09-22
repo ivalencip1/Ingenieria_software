@@ -16,7 +16,7 @@ function AccesoRapido() {
     fetch('http://localhost:8000/api/rewards/ruleta/', {method: 'POST'})
       .then(res => res.json())
       .then(data => {
-        alert(`¡Ganaste ${data.puntos_ganados} puntos!`);
+        alert(`¡Ganaste ${data.puntos_ganados} Magnetopoints!`);
         setPuedeGirar(false);
       })
       .catch(err => alert('Error al girar ruleta'));
@@ -30,7 +30,7 @@ function AccesoRapido() {
 
   return (
     <div style={{margin: '20px'}}>
-      <h3>Acceso rápido</h3>
+      <h3 style={{ textAlign: 'center' }}>Acceso rápido</h3>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',

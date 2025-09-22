@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
+from django.conf import settings
+from django.conf.urls.static import static
 
 # Importa los ViewSets de cada app
 from core.views import PerfilUsuarioViewSet, perfil_usuario
@@ -85,3 +87,7 @@ urlpatterns = [
     path('api/gamification/', include('gamification.urls')),
     path('api/rewards/', include('rewards.urls')),
 ]
+
+# Servir archivos media en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

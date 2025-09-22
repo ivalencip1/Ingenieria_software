@@ -12,10 +12,11 @@ User = get_user_model()
 @api_view(['GET'])
 def misiones_hoy(request):
     """Obtener misiones activas para hoy"""
-    misiones_activas = Mision.objects.filter(activa=True)[:3]
-    
     # Usuario actual o primero para testing
     usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    # Obtener todas las misiones activas primero
+    misiones_activas = Mision.objects.filter(activa=True)
     
     if usuario:
         # Verificar cuáles ya completó
@@ -25,9 +26,11 @@ def misiones_hoy(request):
             completada=True
         ).values_list('mision_id', flat=True)
         
-        misiones_pendientes = misiones_activas.exclude(id__in=misiones_completadas)
+        # Filtrar misiones pendientes y luego aplicar el slice
+        misiones_pendientes = misiones_activas.exclude(id__in=misiones_completadas)[:3]
     else:
-        misiones_pendientes = misiones_activas
+        # Aplicar slice al final
+        misiones_pendientes = misiones_activas[:3]
     
     serializer = MisionSerializer(misiones_pendientes, many=True)
     
