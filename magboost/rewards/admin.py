@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CategoriaRecompensa, Recompensa, CompraRecompensa, RuletaDiaria
+from .models import CategoriaRecompensa, Recompensa, CompraRecompensa, PremioRuleta, RuletaDiariaUsuario
 
 @admin.register(CategoriaRecompensa)
 class CategoriaRecompensaAdmin(admin.ModelAdmin):
@@ -20,8 +20,5 @@ class CompraRecompensaAdmin(admin.ModelAdmin):
     list_editable = ['canjeado']
     readonly_fields = ['fecha_compra']
 
-@admin.register(RuletaDiaria)
-class RuletaDiariaAdmin(admin.ModelAdmin):
-    list_display = ['usuario', 'fecha_ultimo_giro', 'puntos_ganados']
-    list_filter = ['fecha_ultimo_giro', 'puntos_ganados']
-    search_fields = ['usuario__username']
+admin.site.register(PremioRuleta)
+admin.site.register(RuletaDiariaUsuario)

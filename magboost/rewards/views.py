@@ -7,59 +7,133 @@ from django.db.models import Sum, F
 from django.contrib.auth import get_user_model
 from datetime import date
 import random
-from .models import Recompensa, RuletaDiaria, CategoriaRecompensa, CompraRecompensa
+from .models import Recompensa, CategoriaRecompensa, CompraRecompensa, PremioRuleta, RuletaDiariaUsuario
 from core.models import PerfilUsuario
 from django.db import transaction
 import json
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.utils import timezone
+from .serializers import PremioRuletaSerializer, RuletaDiariaUsuarioSerializer
 
 User = get_user_model()
-#-----------------------metodos para conectar con el frontend---------------------
-@csrf_exempt
-@login_required
-def api_ruleta_diaria(request):
-    if request.method == 'POST':
-        hoy = date.today()
-
-        ya_giro = RuletaDiaria.objects.filter(
-            usuario=request.user, 
-            fecha_ultimo_giro=hoy
-        ).exists()
-        
-        if ya_giro:
-            return JsonResponse({
-                'error': 'Ya giraste la ruleta hoy',
-                'ya_giro': True
-            }, status=400)
-        
-        puntos_posibles = [5, 10, 15, 20, 25, 50]
-        puntos_ganados = random.choice(puntos_posibles)
-        RuletaDiaria.objects.create(
-            usuario=request.user,
-            fecha_ultimo_giro=hoy,
-            puntos_ganados=puntos_ganados
-        )
-        
-        perfil = request.user
-        perfil.puntos_totales += puntos_ganados
-        perfil.save()
-        
-        return JsonResponse({
-            'puntos_ganados': puntos_ganados,
-            'total_puntos': perfil.puntos_totales,
-            'ya_giro': True
-        })
+#-----------------------Nuevas vistas para la ruleta mejorada---------------------
+@api_view(['GET'])
+def obtener_premios_ruleta(request):
+    """Obtener todos los premios disponibles en la ruleta"""
+    premios = PremioRuleta.objects.filter(activo=True).order_by('orden')
+    serializer = PremioRuletaSerializer(premios, many=True)
     
-    elif request.method == 'GET':
-        hoy = date.today()
-        ya_giro = RuletaDiaria.objects.filter(
-            usuario=request.user,
-            fecha_ultimo_giro=hoy
-        ).exists()
-        
-        return JsonResponse({
-            'ya_giro': ya_giro,
-            'puntos_usuario': request.user.puntos_totales
-        })
+    return Response({
+        'premios': serializer.data,
+        'total_premios': premios.count()
+    })
+
+@api_view(['GET'])
+def puede_girar_ruleta(request):
+    """Verificar si el usuario puede girar la ruleta hoy"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    hoy = timezone.now().date()
+    
+    # Verificar si ya giró hoy
+    ya_giro_hoy = RuletaDiariaUsuario.objects.filter(
+        usuario=usuario,
+        fecha_giro=hoy
+    ).exists()
+    
+    return Response({
+        'puede_girar': not ya_giro_hoy,
+        'mensaje': 'Ya giraste la ruleta hoy. ¡Vuelve mañana!' if ya_giro_hoy else '¡Puedes girar la ruleta!'
+    })
+
+@api_view(['POST'])
+def girar_ruleta(request):
+    """Girar la ruleta diaria y obtener un premio"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    hoy = timezone.now().date()
+    
+    # Verificar si ya giró hoy
+    if RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists():
+        return Response({
+            'error': 'Ya giraste la ruleta hoy',
+            'mensaje': '¡Vuelve mañana para otro giro!'
+        }, status=400)
+    
+    # Obtener premios activos
+    premios = PremioRuleta.objects.filter(activo=True)
+    
+    if not premios.exists():
+        return Response({'error': 'No hay premios disponibles'}, status=404)
+    
+    # Seleccionar premio basado en probabilidades
+    premio_ganado = seleccionar_premio_aleatorio(premios)
+    
+    # Registrar el giro
+    giro = RuletaDiariaUsuario.objects.create(
+        usuario=usuario,
+        premio_obtenido=premio_ganado
+    )
+    
+    # Aplicar el premio inmediatamente
+    aplicar_premio(usuario, premio_ganado)
+    
+    serializer = RuletaDiariaUsuarioSerializer(giro)
+    
+    return Response({
+        'giro': serializer.data,
+        'premio': PremioRuletaSerializer(premio_ganado).data,
+        'mensaje': f'¡Felicidades! Ganaste: {premio_ganado.nombre}'
+    })
+
+@api_view(['GET'])
+def historial_ruleta(request):
+    """Obtener historial de giros de ruleta del usuario"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    historial = RuletaDiariaUsuario.objects.filter(usuario=usuario).order_by('-fecha_creacion')[:10]
+    serializer = RuletaDiariaUsuarioSerializer(historial, many=True)
+    
+    return Response({
+        'historial': serializer.data,
+        'total_giros': RuletaDiariaUsuario.objects.filter(usuario=usuario).count()
+    })
+
+def seleccionar_premio_aleatorio(premios):
+    """Seleccionar un premio basado en las probabilidades"""
+    opciones = []
+    for premio in premios:
+        entradas = int(premio.probabilidad * 100 / len(premios))
+        opciones.extend([premio] * max(1, entradas))
+    
+    if not opciones:
+        opciones = list(premios)
+    
+    return random.choice(opciones)
+
+def aplicar_premio(usuario, premio):
+    """Aplicar el premio ganado al usuario"""
+    try:
+        if premio.tipo == 'magneto_50':
+            usuario.puntos_totales += 50
+            usuario.save()
+        elif premio.tipo == 'magneto_80':
+            usuario.puntos_totales += 80
+            usuario.save()
+    except Exception as e:
+        print(f"Error aplicando premio: {e}")
+
+#-----------------------metodos para el ranking y recompensas---------------------
 
 @login_required
 def api_ranking(request):

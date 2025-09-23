@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from gamification.models import PremioRuleta
+from rewards.models import PremioRuleta
 
 class Command(BaseCommand):
     help = 'Crea los premios iniciales para la ruleta diaria'
