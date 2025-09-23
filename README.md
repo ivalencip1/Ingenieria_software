@@ -3,11 +3,11 @@
 Nuestra propuesta de pagina web (móvil) de gamificación para motivar el uso de la plataforma Magneto.
 
 ## 👥 INTEGRANTES DEL EQUIPO
-- **Samuel Herrera Galvis*
-- **[Laura Indabur García]**
-- **[Isabela Valencia Pino]**
-- **[Samuel Herrera Galvis]**
-- **[Isaak Kerguelen Porras]**
+- *Samuel Herrera Galvis*
+- *Laura Indabur García*
+- *Isabela Valencia Pino*
+- *Samuel Herrera Galvis*
+- *Isaak Kerguelen Porras*
 
 ---
 
