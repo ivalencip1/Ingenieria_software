@@ -1,4 +1,4 @@
-# MAGBOOST 🚀
+# MAGBOOST 🧲
 
 Nuestra propuesta de pagina web (móvil) de gamificación para motivar el uso de la plataforma Magneto.
 
@@ -44,7 +44,7 @@ npm start
 ## 📱 Uso
 1. Servidor Django: `http://localhost:8000`
 2. App React: `http://localhost:3000`
-3. Admin Django: `http://localhost:8000/admin`
+3. Admin Django por si se quire revisar base de datos e info: `http://localhost:8000/admin`
 
 ## 📦 Apps del proyecto
 - **core:** Usuarios y perfiles
