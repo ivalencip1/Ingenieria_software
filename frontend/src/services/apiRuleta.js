@@ -1,9 +1,8 @@
 const API_BASE_URL = 'http://localhost:8000/api';
 
-// Obtener premios disponibles en la ruleta
 export const obtenerPremiosRuleta = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/gamification/ruleta/premios/`);
+        const response = await fetch(`${API_BASE_URL}/rewards/ruleta/premios/`);
         if (!response.ok) {
             throw new Error('Error al obtener premios de la ruleta');
         }
@@ -17,7 +16,7 @@ export const obtenerPremiosRuleta = async () => {
 // Verificar si el usuario puede girar la ruleta hoy
 export const puedeGirarRuleta = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/gamification/ruleta/puede-girar/`);
+        const response = await fetch(`${API_BASE_URL}/rewards/ruleta/puede-girar/`);
         if (!response.ok) {
             throw new Error('Error al verificar si puede girar');
         }
@@ -31,7 +30,7 @@ export const puedeGirarRuleta = async () => {
 // Girar la ruleta
 export const girarRuleta = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/gamification/ruleta/girar/`, {
+        const response = await fetch(`${API_BASE_URL}/rewards/ruleta/girar/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +49,7 @@ export const girarRuleta = async () => {
 // Obtener historial de giros
 export const obtenerHistorialRuleta = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/gamification/ruleta/historial/`);
+        const response = await fetch(`${API_BASE_URL}/rewards/ruleta/historial/`);
         if (!response.ok) {
             throw new Error('Error al obtener historial');
         }

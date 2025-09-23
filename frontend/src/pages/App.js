@@ -58,7 +58,7 @@ function App() {
           <UserHeader />
           <RetosDia />
           <ProgresoSemanal />
-          <AccesoRapido />
+          <AccesoRapido onCambiarVista={cambiarVista} />
         </div>
       )}
 
@@ -194,27 +194,6 @@ function App() {
         >
           <span style={{fontSize: '20px'}}>📋</span>
           Misiones
-        </button>
-        <button 
-          onClick={() => cambiarVista('ruleta')}
-          style={{
-            padding: '8px 12px',
-            background: 'transparent',
-            color: vistaActual === 'ruleta' ? '#667eea' : '#666',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '12px',
-            fontWeight: vistaActual === 'ruleta' ? '600' : '400',
-            minWidth: '60px'
-          }}
-        >
-          <span style={{fontSize: '20px'}}>🎰</span>
-          Ruleta
         </button>
         <button 
           onClick={() => cambiarVista('tienda')}

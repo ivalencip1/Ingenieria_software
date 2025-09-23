@@ -172,7 +172,6 @@ def verificar_y_otorgar_insignias(usuario):
     
     for insignia in insignias_disponibles:
         cumple_criterio = False
-        
 
         if insignia.tipo == 'misiones_completadas':
             total_completadas = MisionUsuario.objects.filter(
@@ -200,12 +199,10 @@ def verificar_y_otorgar_insignias(usuario):
                     semanas_completas += 1
                     
             if semanas_completas >= insignia.criterio_valor:
-                cumple_criterio = True
-                
+                cumple_criterio = True           
         elif insignia.tipo == 'puntos_acumulados':
             if usuario.puntos_totales >= insignia.criterio_valor:
-                cumple_criterio = True
-                
+                cumple_criterio = True              
         elif insignia.tipo == 'tipo_mision':
             tipo_mision = insignia.criterio_extra
             if tipo_mision:

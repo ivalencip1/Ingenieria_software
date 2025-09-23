@@ -1,30 +1,37 @@
 // src/components/AccesoRapido.js
 import React, { useState, useEffect } from 'react';
+import { puedeGirarRuleta } from '../services/apiRuleta';
 
-function AccesoRapido() {
+function AccesoRapido({ onCambiarVista }) {
   const [puedeGirar, setPuedeGirar] = useState(true);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    // Verificar estado de ruleta
-    fetch('http://localhost:8000/api/rewards/ruleta/')
-      .then(res => res.json())
-      .then(data => setPuedeGirar(!data.ya_giro))
-      .catch(err => console.error(err));
+    verificarEstadoRuleta();
   }, []);
 
-  const girarRuleta = () => {
-    fetch('http://localhost:8000/api/rewards/ruleta/', {method: 'POST'})
-      .then(res => res.json())
-      .then(data => {
-        alert(`¡Ganaste ${data.puntos_ganados} Magnetopoints!`);
-        setPuedeGirar(false);
-      })
-      .catch(err => alert('Error al girar ruleta'));
+  const verificarEstadoRuleta = async () => {
+    try {
+      setCargando(true);
+      const response = await puedeGirarRuleta();
+      setPuedeGirar(response.puede_girar);
+    } catch (error) {
+      console.error('Error al verificar estado de ruleta:', error);
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const manejarRuleta = async () => {
+    // Siempre ir a la página de ruleta para la experiencia completa
+    if (onCambiarVista) {
+      onCambiarVista('ruleta');
+    }
   };
 
   const botones = [
     {titulo: 'Vacantes recomendadas', icono: '✅', color: '#FFB74D', onClick: () => alert('Vacantes')},
-    {titulo: 'Ruleta diaria', icono: '🎯', color: '#4DB6AC', onClick: puedeGirar ? girarRuleta : null},
+    {titulo: 'Ruleta diaria', icono: '🎯', color: '#4DB6AC', onClick: manejarRuleta},
     {titulo: 'Ranking de usuarios', icono: '⭐', color: '#42A5F5', onClick: () => alert('Sorry, en construccion')}
   ];
 
@@ -48,15 +55,38 @@ function AccesoRapido() {
               textAlign: 'center',
               cursor: 'pointer',
               transition: 'transform 0.2s',
-              opacity: (boton.titulo === 'Ruleta diaria' && !puedeGirar) ? 0.5 : 1
+              opacity: (boton.titulo === 'Ruleta diaria' && !puedeGirar) ? 0.7 : 1,
+              position: 'relative'
             }}>
             <div style={{fontSize: '30px', marginBottom: '10px'}}>
               {boton.icono}
             </div>
             <div style={{fontSize: '12px', fontWeight: 'bold'}}>
               {boton.titulo}
-              {boton.titulo === 'Ruleta diaria' && !puedeGirar && ' (Ya giraste)'}
+              {boton.titulo === 'Ruleta diaria' && (
+                <div style={{fontSize: '10px', marginTop: '4px', opacity: 0.9}}>
+                  {cargando ? 'Cargando...' : (puedeGirar ? 'Toca para jugar' : 'Ver estado')}
+                </div>
+              )}
             </div>
+            {boton.titulo === 'Ruleta diaria' && !puedeGirar && (
+              <div style={{
+                position: 'absolute',
+                top: '5px',
+                right: '5px',
+                background: '#FF5252',
+                color: 'white',
+                borderRadius: '50%',
+                width: '20px',
+                height: '20px',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                ✓
+              </div>
+            )}
           </div>
         ))}
       </div>

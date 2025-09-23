@@ -271,13 +271,9 @@
 }
 
 .mision-puntos {
-  background: #48bb78;
-  color: white;
+  font-weight: bold;
+  color: #8B4513;
   font-size: 12px;
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 12px;
-  flex-shrink: 0;
 }
 
 .no-misiones {
