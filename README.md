@@ -11,7 +11,7 @@ Nuestra propuesta de pagina web (móvil) de gamificación para motivar el uso de
 
 ---
 
-## 🎮 ¿Qué hace?
+## 🎮 ¿Qué hace hasta el momento?
 - Sistema de misiones diarias/semanales
 - Puntos e insignias por completar tareas
 - Perfil de usuario con progreso
