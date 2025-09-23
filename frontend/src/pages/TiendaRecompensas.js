@@ -68,12 +68,12 @@ const TiendaRecompensas = ({ onVolver }) => {
     const abrirMagneto = () => {
         setCargandoMagneto(true);
         
-        // Mostrar pantalla de carga por 3 segundos
+        // Mostrar pantalla de carga por 2 segundos
         setTimeout(() => {
             setCargandoMagneto(false);
             // Abrir Magneto365 en nueva pestaña
             window.open('https://www.magneto365.com/es', '_blank');
-        }, 3000);
+        }, 2000);
     };
 
     if (loading) return <div>Cargando tienda...</div>;

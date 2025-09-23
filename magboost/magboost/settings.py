@@ -155,7 +155,11 @@ STATIC_URL = 'static/'
 # Media files (user uploads)
 import os
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'avatars')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Crear directorios de media si no existen
+os.makedirs(os.path.join(MEDIA_ROOT, 'avatars'), exist_ok=True)
+os.makedirs(os.path.join(MEDIA_ROOT, 'insignias'), exist_ok=True)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

@@ -32,7 +32,7 @@ def api_ruleta_diaria(request):
                 'ya_giro': True
             }, status=400)
         
-        # Generar puntos aleatorios (5, 10, 15, 20, 25, 50)
+        
         puntos_posibles = [5, 10, 15, 20, 25, 50]
         puntos_ganados = random.choice(puntos_posibles)
         
@@ -68,7 +68,7 @@ def api_ruleta_diaria(request):
 
 @login_required
 def api_ranking(request):
-    # Top 10 usuarios por puntos
+    
     top_usuarios = PerfilUsuario.objects.order_by('-puntos_totales')[:10]
     
     ranking = []

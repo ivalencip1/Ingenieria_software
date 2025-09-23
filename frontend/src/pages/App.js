@@ -7,13 +7,14 @@ import ProgresoSemanal from "../components/ProgresoSemanal";
 import AccesoRapido from "../components/AccesoRapido";
 import MisionesPage from './MisionesPage';
 import TiendaRecompensas from './TiendaRecompensas';
+import Perfil from './Perfil';
 import './App.css';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda'
+  const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil'
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -49,69 +50,7 @@ const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', '
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div style={{minHeight: '100vh', background: '#f5f5f5'}}>
-      {/* Navegación simple */}
-      <nav style={{
-        padding: '10px 20px', 
-        background: 'white', 
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        gap: '10px'
-      }}>
-        <button 
-          onClick={() => cambiarVista('home')}
-          style={{
-            padding: '8px 16px',
-            background: vistaActual === 'home' ? '#667eea' : '#f0f0f0',
-            color: vistaActual === 'home' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          🏠 Home
-        </button>
-        <button 
-          onClick={() => cambiarVista('usuarios')}
-          style={{
-            padding: '8px 16px',
-            background: vistaActual === 'usuarios' ? '#667eea' : '#f0f0f0',
-            color: vistaActual === 'usuarios' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          👥 Usuarios
-        </button>
-        <button 
-          onClick={() => cambiarVista('misiones')}
-          style={{
-            padding: '8px 16px',
-            background: vistaActual === 'misiones' ? '#667eea' : '#f0f0f0',
-            color: vistaActual === 'misiones' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          📋 Misiones
-        </button>
-        <button 
-          onClick={() => cambiarVista('tienda')}
-          style={{
-            padding: '8px 16px',
-            background: vistaActual === 'tienda' ? '#667eea' : '#f0f0f0',
-            color: vistaActual === 'tienda' ? 'white' : '#333',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          🛍️ Tienda
-        </button>
-      </nav>
-
+    <div style={{minHeight: '100vh', background: '#f5f5f5', paddingBottom: '80px'}}>
       {/* Contenido según la vista */}
       {vistaActual === 'home' && (
         <div>
@@ -145,12 +84,16 @@ const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', '
         <TiendaRecompensas onVolver={() => setVistaActual('home')} />
       )}
 
+      {vistaActual === 'perfil' && (
+        <Perfil />
+      )}
+
       {/* Botón flotante Magneto - Global */}
       <div 
         onClick={() => window.open('https://www.magneto365.com/es', '_blank')}
         style={{
           position: 'fixed',
-          bottom: '20px',
+          bottom: '90px',
           right: '20px',
           width: '60px',
           height: '60px',
@@ -170,6 +113,126 @@ const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', '
       >
         m
       </div>
+
+      {/* Navegación inferior fija */}
+      <nav style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'white',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.1)',
+        display: 'flex',
+        justifyContent: 'space-around',
+        padding: '10px 0',
+        zIndex: 1000
+      }}>
+        <button 
+          onClick={() => cambiarVista('home')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'home' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'home' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>🏠</span>
+          Home
+        </button>
+        <button 
+          onClick={() => cambiarVista('usuarios')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'usuarios' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'usuarios' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>👥</span>
+          Usuarios
+        </button>
+        <button 
+          onClick={() => cambiarVista('misiones')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'misiones' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'misiones' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>📋</span>
+          Misiones
+        </button>
+        <button 
+          onClick={() => cambiarVista('tienda')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'tienda' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'tienda' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>🛍️</span>
+          Tienda
+        </button>
+        <button 
+          onClick={() => cambiarVista('perfil')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'perfil' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'perfil' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>👤</span>
+          Perfil
+        </button>
+      </nav>
     </div>
   );
 }
