@@ -23,7 +23,7 @@ function ProgresoSemanal() {
 
   const porcentaje = progreso.progreso_porcentaje || 0;
   const completadas = progreso.misiones_completadas || 0;
-  const total = progreso.meta_semanal || 5;
+  const total = progreso.meta_semanal ||10;
 
   return (
     <div className="progreso-container">

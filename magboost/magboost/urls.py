@@ -44,6 +44,7 @@ def api_root(request):
             'progreso': '/api/gamification/progreso/',
             'ruleta': '/api/rewards/ruleta/',
             'ranking': '/api/rewards/ranking/',
+            'magnetosimulator': '/api/magnetosimulator/',
         }
     })
 
@@ -86,6 +87,7 @@ urlpatterns = [
     path('api/core/', include('core.urls')),
     path('api/gamification/', include('gamification.urls')),
     path('api/rewards/', include('rewards.urls')),
+    path('api/magnetosimulator/', include('magnetosimulator.urls')),
 ]
 
 # Servir archivos media en desarrollo

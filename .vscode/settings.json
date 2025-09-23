@@ -1,0 +1,12 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Django Database",
+            "database": "${workspaceFolder:MAGBOOST}/magboost/db.sqlite3",
+            "group": "j"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}

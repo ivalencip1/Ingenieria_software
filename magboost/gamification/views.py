@@ -3,33 +3,29 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from datetime import timedelta
 from .models import Mision, MisionUsuario, Insignia, InsigniaUsuario
 from .serializers import MisionSerializer
-
+from magnetosimulator.views import procesar_completar_mision_magneto
+from django.db.models import Count
+from datetime import datetime, timedelta
+    
 User = get_user_model()
 
 @api_view(['GET'])
 def misiones_hoy(request):
-    """Obtener misiones activas para hoy"""
-    # Usuario actual o primero para testing
     usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
-    # Obtener todas las misiones activas primero
     misiones_activas = Mision.objects.filter(activa=True)
     
     if usuario:
-        # Verificar cuáles ya completó
+ 
         misiones_completadas = MisionUsuario.objects.filter(
             usuario=usuario,
             mision__in=misiones_activas,
             completada=True
         ).values_list('mision_id', flat=True)
         
-        # Filtrar misiones pendientes y luego aplicar el slice
         misiones_pendientes = misiones_activas.exclude(id__in=misiones_completadas)[:3]
     else:
-        # Aplicar slice al final
         misiones_pendientes = misiones_activas[:3]
     
     serializer = MisionSerializer(misiones_pendientes, many=True)
@@ -47,8 +43,6 @@ def misiones_completadas(request):
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
-    
-    # Obtener misiones completadas con información de la misión
     misiones_completadas = MisionUsuario.objects.filter(
         usuario=usuario, 
         completada=True
@@ -68,55 +62,41 @@ def misiones_completadas(request):
 
 @api_view(['POST'])
 def completar_mision(request, mision_id):
-    """Marcar una misión como completada"""
     try:
         mision = Mision.objects.get(id=mision_id)
         usuario = request.user if request.user.is_authenticated else User.objects.first()
         
         if not usuario:
             return Response({'error': 'Usuario no encontrado'}, status=404)
+
+        resultado_magneto = procesar_completar_mision_magneto(usuario, mision)
         
-        mision_usuario, created = MisionUsuario.objects.get_or_create(
-            usuario=usuario,
-            mision=mision,
-            defaults={'completada': True, 'fecha_completada': timezone.now()}
-        )
-        
-        if not created and not mision_usuario.completada:
-            mision_usuario.completada = True
-            mision_usuario.fecha_completada = timezone.now()
-            mision_usuario.save()
-        
-        # Agregar puntos al usuario
+        if not resultado_magneto['exitosa']:
+            return Response(resultado_magneto, status=400)
         usuario.puntos_totales += mision.puntos_recompensa
         usuario.save()
-        
-        # ¡NUEVO! Verificar y otorgar insignias después de completar misión
         nuevas_insignias = verificar_y_otorgar_insignias(usuario)
         
         return Response({
             'mensaje': f'¡Misión "{mision.titulo}" completada!',
             'puntos_ganados': mision.puntos_recompensa,
             'puntos_totales': usuario.puntos_totales,
-            'nuevas_insignias': [{'nombre': i.insignia.nombre, 'icono_display': i.insignia.get_icono_display()} for i in nuevas_insignias]
+            'nuevas_insignias': [{'nombre': i.insignia.nombre, 'icono_display': i.insignia.get_icono_display()} for i in nuevas_insignias],
+            'verificado_en_magneto': True
         })
     except Mision.DoesNotExist:
         return Response({'error': 'Misión no encontrada'}, status=404)
 
 @api_view(['GET'])
 def progreso_semanal(request):
-    """Calcular progreso semanal del usuario"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
-    # Calcular inicio de semana (lunes)
     hoy = timezone.now().date()
     inicio_semana = hoy - timedelta(days=hoy.weekday())
     fin_semana = inicio_semana + timedelta(days=6)
-    
-    # Contar misiones completadas esta semana
+
     misiones_completadas = MisionUsuario.objects.filter(
         usuario=usuario,
         completada=True,
@@ -124,7 +104,7 @@ def progreso_semanal(request):
     ).count()
     
     # Meta semanal
-    meta_semanal = 5
+    meta_semanal = 10
     progreso_porcentaje = min((misiones_completadas / meta_semanal) * 100, 100)
     
     return Response({
@@ -138,26 +118,21 @@ def progreso_semanal(request):
 
 @api_view(['GET'])
 def todas_las_misiones(request):
-    """Obtener todas las misiones organizadas por tipo"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
-    
-    # Obtener misiones completadas por el usuario
     misiones_completadas = MisionUsuario.objects.filter(
         usuario=usuario,
         completada=True
     ).values_list('mision_id', flat=True)
     
-    # Organizar misiones por tipo usando TIPO_CHOICES del modelo
     misiones_por_tipo = {
         'diaria': [],
         'semanal': [],
         'mensual': []
     }
     
-    # Obtener misiones por cada tipo
+    # Aqui vamos aobtener misiones por cada tipo
     for tipo_key, tipo_label in Mision.TIPO_CHOICES:
         misiones = Mision.objects.filter(tipo=tipo_key, activa=True)
         
@@ -167,7 +142,7 @@ def todas_las_misiones(request):
                 'titulo': mision.titulo,
                 'descripcion': mision.descripcion,
                 'puntos_recompensa': mision.puntos_recompensa,
-                'icono': mision.icono,  # Usar icono del modelo
+                'icono': mision.icono,  
                 'completada': mision.id in misiones_completadas,
                 'estado': 'Completado' if mision.id in misiones_completadas else 'Pendiente'
             })
@@ -179,20 +154,14 @@ def todas_las_misiones(request):
     })
 
 
-# ==================== SISTEMA DE INSIGNIAS ====================
+# ------------------ SISTEMA DE INSIGNIAS ---------
 
 def verificar_y_otorgar_insignias(usuario):
-    """
-    Función que verifica si el usuario cumple criterios para nuevas insignias
-    y se las otorga automáticamente
-    """
-    from .models import Insignia, InsigniaUsuario
-    from django.db.models import Count
-    from datetime import datetime, timedelta
+
+
     
     insignias_obtenidas = []
-    
-    # Obtener insignias activas que el usuario no tiene
+
     insignias_disponibles = Insignia.objects.filter(
         activa=True
     ).exclude(
@@ -202,9 +171,8 @@ def verificar_y_otorgar_insignias(usuario):
     for insignia in insignias_disponibles:
         cumple_criterio = False
         
-        # Verificar según el tipo de insignia
+
         if insignia.tipo == 'misiones_completadas':
-            # Contar misiones completadas por el usuario
             total_completadas = MisionUsuario.objects.filter(
                 usuario=usuario, completada=True
             ).count()
@@ -213,12 +181,8 @@ def verificar_y_otorgar_insignias(usuario):
                 cumple_criterio = True
                 
         elif insignia.tipo == 'progreso_semanal':
-            # Verificar si completó el progreso semanal X veces
-            # Aquí contamos cuántas semanas ha cumplido la meta
             from django.utils import timezone
             hoy = timezone.now().date()
-            
-            # Contar semanas donde completó 5 o más misiones
             semanas_completas = 0
             for semana in range(insignia.criterio_valor * 2):  # Revisar las últimas N semanas
                 inicio_semana = hoy - timedelta(days=hoy.weekday() + (semana * 7))
@@ -230,19 +194,17 @@ def verificar_y_otorgar_insignias(usuario):
                     fecha_completada__date__range=[inicio_semana, fin_semana]
                 ).count()
                 
-                if misiones_semana >= 5:  # Meta semanal
+                if misiones_semana >= 10:  # Meta semanal
                     semanas_completas += 1
                     
             if semanas_completas >= insignia.criterio_valor:
                 cumple_criterio = True
                 
         elif insignia.tipo == 'puntos_acumulados':
-            # Verificar puntos totales del usuario
             if usuario.puntos_totales >= insignia.criterio_valor:
                 cumple_criterio = True
                 
         elif insignia.tipo == 'tipo_mision':
-            # Verificar misiones de un tipo específico (criterio_extra)
             tipo_mision = insignia.criterio_extra
             if tipo_mision:
                 misiones_tipo = MisionUsuario.objects.filter(
@@ -255,12 +217,10 @@ def verificar_y_otorgar_insignias(usuario):
                     cumple_criterio = True
                     
         elif insignia.tipo == 'racha_diaria':
-            # Verificar días consecutivos completando al menos 1 misión
             racha_actual = calcular_racha_diaria(usuario)
             if racha_actual >= insignia.criterio_valor:
                 cumple_criterio = True
         
-        # Si cumple el criterio, otorgar la insignia
         if cumple_criterio:
             insignia_usuario = InsigniaUsuario.objects.create(
                 usuario=usuario,
@@ -273,15 +233,9 @@ def verificar_y_otorgar_insignias(usuario):
 
 
 def calcular_racha_diaria(usuario):
-    """Calcula la racha actual de días consecutivos completando misiones"""
-    from django.utils import timezone
-    from datetime import timedelta
-    
     hoy = timezone.now().date()
     racha = 0
-    
-    # Verificar día por día hacia atrás
-    for dias_atras in range(30):  # Máximo 30 días hacia atrás
+    for dias_atras in range(30): 
         fecha_check = hoy - timedelta(days=dias_atras)
         
         misiones_dia = MisionUsuario.objects.filter(
@@ -293,29 +247,24 @@ def calcular_racha_diaria(usuario):
         if misiones_dia > 0:
             racha += 1
         else:
-            break  # Se rompe la racha
+            break 
             
     return racha
 
 
 @api_view(['GET'])
 def insignias_usuario(request):
-    """Obtener insignias del usuario actual"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
-    # Verificar y otorgar nuevas insignias antes de mostrar
     nuevas_insignias = verificar_y_otorgar_insignias(usuario)
-    
-    # Obtener insignias del usuario
     from .models import InsigniaUsuario, Insignia
     
     insignias_obtenidas = InsigniaUsuario.objects.filter(usuario=usuario).select_related('insignia')
     insignias_disponibles = Insignia.objects.filter(activa=True)
-    
-    # Formatear insignias obtenidas
+
     insignias_data = []
     for insignia_usuario in insignias_obtenidas:
         insignias_data.append({
@@ -329,14 +278,12 @@ def insignias_usuario(request):
             'fecha_obtenida': insignia_usuario.fecha_obtenida.isoformat(),
             'obtenida': True
         })
-    
-    # Formatear insignias disponibles (no obtenidas)
+
     ids_obtenidas = [i.insignia.id for i in insignias_obtenidas]
     insignias_pendientes = []
     
     for insignia in insignias_disponibles:
         if insignia.id not in ids_obtenidas:
-            # Calcular progreso actual
             progreso = calcular_progreso_insignia(usuario, insignia)
             
             insignias_pendientes.append({
@@ -362,7 +309,6 @@ def insignias_usuario(request):
 
 
 def calcular_progreso_insignia(usuario, insignia):
-    """Calcula el progreso actual del usuario hacia una insignia específica"""
     if insignia.tipo == 'misiones_completadas':
         return MisionUsuario.objects.filter(usuario=usuario, completada=True).count()
         
@@ -382,14 +328,13 @@ def calcular_progreso_insignia(usuario, insignia):
         return calcular_racha_diaria(usuario)
         
     elif insignia.tipo == 'progreso_semanal':
-        # Contar semanas completadas
         from django.utils import timezone
         from datetime import timedelta
         
         hoy = timezone.now().date()
         semanas_completas = 0
         
-        for semana in range(10):  # Revisar últimas 10 semanas
+        for semana in range(10):  
             inicio_semana = hoy - timedelta(days=hoy.weekday() + (semana * 7))
             fin_semana = inicio_semana + timedelta(days=6)
             

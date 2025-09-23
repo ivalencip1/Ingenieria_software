@@ -1,3 +1,9 @@
 from django.shortcuts import render
 
-# Create your views here.
+
+#----->Metodos de esta app
+
+# enviar_notificacion()
+# aceptar_invitacion()
+# compartir_logro()
+

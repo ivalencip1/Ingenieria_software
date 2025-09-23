@@ -19,8 +19,7 @@ User = get_user_model()
 def api_ruleta_diaria(request):
     if request.method == 'POST':
         hoy = date.today()
-        
-        # Verificar si ya giro hoy
+
         ya_giro = RuletaDiaria.objects.filter(
             usuario=request.user, 
             fecha_ultimo_giro=hoy
@@ -32,18 +31,14 @@ def api_ruleta_diaria(request):
                 'ya_giro': True
             }, status=400)
         
-        
         puntos_posibles = [5, 10, 15, 20, 25, 50]
         puntos_ganados = random.choice(puntos_posibles)
-        
-        # Crear registro de giro
         RuletaDiaria.objects.create(
             usuario=request.user,
             fecha_ultimo_giro=hoy,
             puntos_ganados=puntos_ganados
         )
         
-        # Actualizar puntos del usuario
         perfil = request.user
         perfil.puntos_totales += puntos_ganados
         perfil.save()

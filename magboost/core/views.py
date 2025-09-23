@@ -40,18 +40,16 @@ def perfil_completo(request):
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
-    # Importar modelos necesarios
+   
     from gamification.models import MisionUsuario, InsigniaUsuario
     from django.utils import timezone
     from datetime import timedelta
     
     # Datos básicos del usuario
     perfil_data = PerfilUsuarioSerializer(usuario).data
-    
-    # Estadísticas de misiones
+ 
     total_misiones = MisionUsuario.objects.filter(usuario=usuario, completada=True).count()
     
-    # Misiones por tipo
     misiones_diarias = MisionUsuario.objects.filter(
         usuario=usuario, completada=True, mision__tipo='diaria'
     ).count()
@@ -62,7 +60,7 @@ def perfil_completo(request):
         usuario=usuario, completada=True, mision__tipo='mensual'
     ).count()
     
-    # Insignias obtenidas
+
     insignias_obtenidas = InsigniaUsuario.objects.filter(usuario=usuario).select_related('insignia')
     insignias_data = []
     
@@ -78,7 +76,6 @@ def perfil_completo(request):
             'fecha_obtenida': insignia_usuario.fecha_obtenida.isoformat(),
         })
     
-    # Calcular progreso semanal actual
     hoy = timezone.now().date()
     inicio_semana = hoy - timedelta(days=hoy.weekday())
     fin_semana = inicio_semana + timedelta(days=6)
@@ -89,14 +86,13 @@ def perfil_completo(request):
         fecha_completada__date__range=[inicio_semana, fin_semana]
     ).count()
     
-    meta_semanal = 5
+    meta_semanal = 10
     progreso_semanal = {
         'completadas': misiones_esta_semana,
         'meta': meta_semanal,
         'porcentaje': min((misiones_esta_semana / meta_semanal) * 100, 100)
     }
     
-    # Respuesta completa
     return Response({
         'perfil': perfil_data,
         'estadisticas': {
