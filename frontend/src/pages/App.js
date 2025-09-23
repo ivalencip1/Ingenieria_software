@@ -8,13 +8,14 @@ import AccesoRapido from "../components/AccesoRapido";
 import MisionesPage from './MisionesPage';
 import TiendaRecompensas from './TiendaRecompensas';
 import Perfil from './Perfil';
+import RuletaPage from './RuletaPage';
 import './App.css';
 
 function App() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil'
+  const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil', 'ruleta'
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -86,6 +87,10 @@ function App() {
 
       {vistaActual === 'perfil' && (
         <Perfil />
+      )}
+
+      {vistaActual === 'ruleta' && (
+        <RuletaPage />
       )}
 
       {/* Botón flotante Magneto - Global */}
@@ -189,6 +194,27 @@ function App() {
         >
           <span style={{fontSize: '20px'}}>📋</span>
           Misiones
+        </button>
+        <button 
+          onClick={() => cambiarVista('ruleta')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'ruleta' ? '#667eea' : '#666',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'ruleta' ? '600' : '400',
+            minWidth: '60px'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>🎰</span>
+          Ruleta
         </button>
         <button 
           onClick={() => cambiarVista('tienda')}

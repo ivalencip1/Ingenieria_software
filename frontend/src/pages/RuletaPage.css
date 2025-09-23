@@ -1,0 +1,29 @@
+.ruleta-page-simple {
+    min-height: 100vh;
+    background: #f5f5f5;
+    padding: 20px;
+    text-align: center;
+}
+
+.ruleta-page-simple h1 {
+    font-size: 2.5em;
+    margin: 20px 0 10px 0;
+    color: #333;
+}
+
+.ruleta-page-simple p {
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ruleta-page-simple {
+        padding: 15px;
+    }
+    
+    .ruleta-page-simple h1 {
+        font-size: 2em;
+    }
+}

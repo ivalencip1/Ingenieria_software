@@ -3,11 +3,13 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
 from django.contrib.auth import get_user_model
-from .models import Mision, MisionUsuario, Insignia, InsigniaUsuario
-from .serializers import MisionSerializer
+from .models import Mision, MisionUsuario, Insignia, InsigniaUsuario, PremioRuleta, RuletaDiariaUsuario
+from .serializers import MisionSerializer, PremioRuletaSerializer, RuletaDiariaUsuarioSerializer
 from magnetosimulator.views import procesar_completar_mision_magneto
 from django.db.models import Count
 from datetime import datetime, timedelta
+import random
+from core.models import PerfilUsuario
     
 User = get_user_model()
 
@@ -350,4 +352,145 @@ def calcular_progreso_insignia(usuario, insignia):
         return semanas_completas
     
     return 0
+
+
+@api_view(['GET'])
+def obtener_premios_ruleta(request):
+    """Obtener todos los premios disponibles en la ruleta"""
+    premios = PremioRuleta.objects.filter(activo=True).order_by('orden')
+    serializer = PremioRuletaSerializer(premios, many=True)
+    
+    return Response({
+        'premios': serializer.data,
+        'total_premios': premios.count()
+    })
+
+
+@api_view(['GET'])
+def puede_girar_ruleta(request):
+    """Verificar si el usuario puede girar la ruleta hoy"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    hoy = timezone.now().date()
+    
+    # Verificar si ya giró hoy
+    ya_giro_hoy = RuletaDiariaUsuario.objects.filter(
+        usuario=usuario,
+        fecha_giro=hoy
+    ).exists()
+    
+    return Response({
+        'puede_girar': not ya_giro_hoy,
+        'mensaje': 'Ya giraste la ruleta hoy. ¡Vuelve mañana!' if ya_giro_hoy else '¡Puedes girar la ruleta!'
+    })
+
+
+@api_view(['POST'])
+def girar_ruleta(request):
+    """Girar la ruleta diaria y obtener un premio"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    hoy = timezone.now().date()
+    
+    # Verificar si ya giró hoy
+    if RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists():
+        return Response({
+            'error': 'Ya giraste la ruleta hoy',
+            'mensaje': '¡Vuelve mañana para otro giro!'
+        }, status=400)
+    
+    # Obtener premios activos
+    premios = PremioRuleta.objects.filter(activo=True)
+    
+    if not premios.exists():
+        return Response({'error': 'No hay premios disponibles'}, status=404)
+    
+    # Seleccionar premio basado en probabilidades
+    premio_ganado = seleccionar_premio_aleatorio(premios)
+    
+    # Registrar el giro
+    giro = RuletaDiariaUsuario.objects.create(
+        usuario=usuario,
+        premio_obtenido=premio_ganado
+    )
+    
+    # Aplicar el premio inmediatamente
+    aplicar_premio(usuario, premio_ganado)
+    
+    serializer = RuletaDiariaUsuarioSerializer(giro)
+    
+    return Response({
+        'giro': serializer.data,
+        'premio': PremioRuletaSerializer(premio_ganado).data,
+        'mensaje': f'¡Felicidades! Ganaste: {premio_ganado.nombre}'
+    })
+
+
+@api_view(['GET'])
+def historial_ruleta(request):
+    """Obtener historial de giros de ruleta del usuario"""
+    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    
+    if not usuario:
+        return Response({'error': 'Usuario no encontrado'}, status=404)
+    
+    historial = RuletaDiariaUsuario.objects.filter(usuario=usuario).order_by('-fecha_creacion')[:10]
+    serializer = RuletaDiariaUsuarioSerializer(historial, many=True)
+    
+    return Response({
+        'historial': serializer.data,
+        'total_giros': RuletaDiariaUsuario.objects.filter(usuario=usuario).count()
+    })
+
+
+def seleccionar_premio_aleatorio(premios):
+    """Seleccionar un premio basado en las probabilidades"""
+    # Crear lista con los premios repetidos según su probabilidad
+    opciones = []
+    for premio in premios:
+        # Convertir probabilidad a cantidad de entradas (por cada 1% = 1 entrada)
+        entradas = int(premio.probabilidad * 100 / len(premios))  # Normalizar
+        opciones.extend([premio] * max(1, entradas))
+    
+    # Si no hay opciones, usar distribución uniforme
+    if not opciones:
+        opciones = list(premios)
+    
+    return random.choice(opciones)
+
+
+def aplicar_premio(usuario, premio):
+    """Aplicar el premio ganado al usuario"""
+    try:
+        # Usar directamente el usuario que ya es PerfilUsuario
+        if premio.tipo == 'magneto_50':
+            usuario.puntos_totales += 50
+            usuario.save()
+            
+        elif premio.tipo == 'magneto_80':
+            usuario.puntos_totales += 80
+            usuario.save()
+            
+        elif premio.tipo == 'invita_gana':
+            # Marcar que tiene doble puntos por invitación activo
+            # Esto se podría implementar con un campo adicional en el modelo PerfilUsuario
+            pass
+            
+        elif premio.tipo == 'tip_laboral':
+            # El tip laboral se puede mostrar en el frontend
+            pass
+            
+        elif premio.tipo == 'acceso_curso':
+            # El acceso al curso se puede manejar en el frontend
+            pass
+            
+    except Exception as e:
+        print(f"Error aplicando premio: {e}")
+        pass  # Error al aplicar premio
 
