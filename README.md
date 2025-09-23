@@ -1,17 +1,17 @@
-# MAGBOOST 🚀
+# MAGBOOST 🧲
 
 Nuestra propuesta de pagina web (móvil) de gamificación para motivar el uso de la plataforma Magneto.
 
 ## 👥 INTEGRANTES DEL EQUIPO
-- **[Samuel Herrera Galvis]**
-- **[Laura Indabur García]**
-- **[Isabela Valencia Pino]**
-- **[Samuel Herrera Galvis]**
-- **[Isaak Kerguelen Porras]**
+- *Samuel Herrera Galvis*
+- *Laura Indabur García*
+- *Isabela Valencia Pino*
+- *Samuel Herrera Galvis*
+- *Isaak Kerguelen Porras*
 
 ---
 
-## 🎮 ¿Qué hace?
+## 🎮 ¿Qué hace hasta el momento?
 - Sistema de misiones diarias/semanales
 - Puntos e insignias por completar tareas
 - Perfil de usuario con progreso
@@ -44,7 +44,7 @@ npm start
 ## 📱 Uso
 1. Servidor Django: `http://localhost:8000`
 2. App React: `http://localhost:3000`
-3. Admin Django: `http://localhost:8000/admin`
+3. Admin Django por si se quire revisar base de datos e info: `http://localhost:8000/admin`
 
 ## 📦 Apps del proyecto
 - **core:** Usuarios y perfiles
