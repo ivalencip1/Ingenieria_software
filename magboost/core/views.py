@@ -38,7 +38,14 @@ def perfil_usuario(request):
 
 @api_view(['GET'])
 def perfil_completo(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    usuario_id = request.GET.get('usuario_id')
+    if usuario_id:
+        try:
+            usuario = User.objects.get(id=usuario_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=404)
+    else:
+        usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)

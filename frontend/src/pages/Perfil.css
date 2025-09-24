@@ -347,6 +347,46 @@
   justify-content: center;
 }
 
+/* Modal de insignia */
+.insignia-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.insignia-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  text-align: center;
+}
+
+.insignia-modal-content h3 {
+  margin: 0 0 10px 0;
+  color: #2d3748;
+}
+
+.insignia-modal-content p {
+  margin: 0 0 16px 0;
+  color: #4a5568;
+}
+
+.insignia-modal-close {
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
 .no-insignias {
   text-align: center;
   padding: 40px 20px;

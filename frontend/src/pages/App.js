@@ -23,7 +23,6 @@ function App() {
       try {
         setLoading(true);
         const res = await usuariosAPI.listar();
-        
         if (Array.isArray(res.data)) {
           setUsuarios(res.data);
         } else if (res.data.results && Array.isArray(res.data.results)) {
@@ -41,13 +40,27 @@ function App() {
     };
 
     fetchUsuarios();
-    
     // Cargar usuario del demo selector si existe
     const usuarioDemo = localStorage.getItem('usuario');
     if (usuarioDemo) {
       setUsuarioActual(JSON.parse(usuarioDemo));
     }
   }, []);
+
+  // Actualizar puntos del usuario actual cada vez que cambia
+  useEffect(() => {
+    const actualizarUsuarioActual = async () => {
+      if (usuarioActual && usuarioActual.id) {
+        try {
+          const res = await usuariosAPI.detalle(usuarioActual.id);
+          setUsuarioActual(res.data);
+        } catch (error) {
+          // Si falla, mantener el usuario actual
+        }
+      }
+    };
+    actualizarUsuarioActual();
+  }, [usuarioActual?.id]);
 
   // Función para cambiar entre vistas
   const cambiarVista = (vista) => {
@@ -97,7 +110,7 @@ function App() {
       )}
 
       {vistaActual === 'ruleta' && (
-        <RuletaPage />
+        <RuletaPage usuarioActual={usuarioActual} />
       )}
 
       {/* Botón flotante Magneto - Global */}

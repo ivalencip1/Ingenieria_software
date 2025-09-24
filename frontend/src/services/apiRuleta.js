@@ -14,40 +14,39 @@ export const obtenerPremiosRuleta = async () => {
 };
 
 // Verificar si el usuario puede girar la ruleta hoy
-export const puedeGirarRuleta = async () => {
-    return async (usuarioId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/rewards/ruleta/puede-girar/?usuario_id=${usuarioId}`);
-            if (!response.ok) {
-                throw new Error('Error al verificar si puede girar');
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
+export const puedeGirarRuleta = async (usuarioId) => {
+    try {
+        const url = usuarioId
+            ? `${API_BASE_URL}/rewards/ruleta/puede-girar/?usuario_id=${usuarioId}`
+            : `${API_BASE_URL}/rewards/ruleta/puede-girar/`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Error al verificar si puede girar');
         }
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
     }
 };
 
 // Girar la ruleta
-export const girarRuleta = async () => {
-    return async (usuarioId) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/rewards/ruleta/girar/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ usuario_id: usuarioId })
-            });
-            if (!response.ok) {
-                throw new Error('Error al girar la ruleta');
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Error:', error);
-            throw error;
+export const girarRuleta = async (usuarioId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/rewards/ruleta/girar/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(usuarioId ? { usuario_id: usuarioId } : {})
+        });
+        if (!response.ok) {
+            throw new Error('Error al girar la ruleta');
         }
+        return await response.json();
+    } catch (error) {
+        console.error('Error:', error);
+        throw error;
     }
 };
 

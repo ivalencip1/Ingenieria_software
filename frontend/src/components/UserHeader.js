@@ -1,17 +1,8 @@
 // src/components/UserHeader.js
-import React, { useState, useEffect } from 'react';
-import { usuariosAPI } from '../services/apiUsuarios';
+import React from 'react';
 
-function UserHeader() {
-  const [usuario, setUsuario] = useState(null);
-  
-  useEffect(() => {
-  // Usar API específica de perfil
-  fetch('http://localhost:8000/api/core/perfil/')
-    .then(res => res.json())
-    .then(data => setUsuario(data))
-    .catch(err => console.error(err));
-}, []);
+function UserHeader({ usuarioActual }) {
+  const usuario = usuarioActual || null;
 
   return (
     <header style={{

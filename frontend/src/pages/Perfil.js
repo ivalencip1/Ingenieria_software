@@ -2,17 +2,19 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Perfil.css';
 
-const Perfil = ({ onVolver }) => {
+const Perfil = ({ onVolver, usuarioActual }) => {
   const [perfilData, setPerfilData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [misionesExpanded, setMisionesExpanded] = useState(false);
   const [misionesCompletadas, setMisionesCompletadas] = useState([]);
+  const [insigniaSeleccionada, setInsigniaSeleccionada] = useState(null);
 
   useEffect(() => {
     const fetchPerfilCompleto = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/core/perfil-completo/');
+        const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
+        const response = await axios.get(`http://localhost:8000/api/core/perfil-completo/${q}`);
         setPerfilData(response.data);
       } catch (err) {
         setError('Error al cargar el perfil');
@@ -23,11 +25,12 @@ const Perfil = ({ onVolver }) => {
     };
 
     fetchPerfilCompleto();
-  }, []);
+  }, [usuarioActual]);
 
   const fetchMisionesCompletadas = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/gamification/misiones-completadas/');
+      const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
+      const response = await axios.get(`http://localhost:8000/api/gamification/misiones-completadas/${q}`);
       setMisionesCompletadas(response.data);
     } catch (err) {
       console.error('Error al cargar misiones:', err);
@@ -66,7 +69,7 @@ const Perfil = ({ onVolver }) => {
     return null;
   }
 
-  const { perfil, estadisticas, insignias_obtenidas, total_insignias, progreso_semanal, biografia } = perfilData;
+  const { perfil, estadisticas, insignias_obtenidas, total_insignias,  biografia } = perfilData;
 
   return (
     <div className="perfil-container">
@@ -161,7 +164,12 @@ const Perfil = ({ onVolver }) => {
         {insignias_obtenidas.length > 0 ? (
           <div className="insignias-horizontal">
             {insignias_obtenidas.map((insignia) => (
-              <div key={insignia.id} className="insignia-simple" title={insignia.nombre}>
+              <div 
+                key={insignia.id} 
+                className="insignia-simple" 
+                title={insignia.nombre}
+                onClick={() => setInsigniaSeleccionada(insignia)}
+              >
                 {insignia.imagen_url ? (
                   <img 
                     src={insignia.imagen_url} 
@@ -196,6 +204,16 @@ const Perfil = ({ onVolver }) => {
           </div>
         )}
       </div>
+
+      {insigniaSeleccionada && (
+        <div className="insignia-modal" onClick={() => setInsigniaSeleccionada(null)}>
+          <div className="insignia-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>{insigniaSeleccionada.nombre}</h3>
+            <p>{insigniaSeleccionada.descripcion}</p>
+            <button className="insignia-modal-close" onClick={() => setInsigniaSeleccionada(null)}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

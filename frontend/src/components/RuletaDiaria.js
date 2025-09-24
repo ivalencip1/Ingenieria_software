@@ -3,7 +3,7 @@ import { Wheel } from 'react-custom-roulette';
 import { obtenerPremiosRuleta, puedeGirarRuleta, girarRuleta } from '../services/apiRuleta';
 import './RuletaDiaria.css';
 
-const RuletaDiaria = () => {
+const RuletaDiaria = ({ usuarioActual }) => {
     const [premios, setPremios] = useState([]);
     const [puedeGirar, setPuedeGirar] = useState(false);
     const [mustStartSpinning, setMustStartSpinning] = useState(false);
@@ -22,7 +22,7 @@ const RuletaDiaria = () => {
             setCargando(true);
             const [premiosData, puedeGirarData] = await Promise.all([
                 obtenerPremiosRuleta(),
-                puedeGirarRuleta()
+                puedeGirarRuleta(usuarioActual?.id)
             ]);
 
             setPremios(premiosData.premios || []);
@@ -60,8 +60,8 @@ const RuletaDiaria = () => {
         option: `${obtenerIconoPremio(premio.tipo)} ${premio.nombre}`,
         style: { 
             backgroundColor: obtenerColorPremio(index),
-            textColor: '#FFFFFF',
-            fontSize: 14,
+            textColor: '#000000',
+            fontSize: 18,
             fontWeight: 'bold'
         }
     })) : [];
@@ -70,25 +70,26 @@ const RuletaDiaria = () => {
         if (!puedeGirar || mustStartSpinning) return;
 
         try {
-            // Primero obtenemos el resultado del backend
-            const resultado = await girarRuleta();
-            
-            // Encontramos el índice del premio ganado
+            const resultado = await girarRuleta(usuarioActual?.id);
             const indicePremio = premios.findIndex(p => p.id === resultado.premio.id);
-            
             if (indicePremio >= 0) {
                 setPrizeNumber(indicePremio);
                 setPremioGanado(resultado.premio);
                 setMensaje(resultado.mensaje);
                 setPuedeGirar(false);
-                
-                // Iniciar la animación de giro
                 setMustStartSpinning(true);
             }
-
         } catch (error) {
-            console.error('Error al girar:', error);
-            setMensaje('Error al girar la ruleta');
+            // Manejo específico cuando ya giró hoy o 405/400
+            try {
+                const parsed = await error.response?.json?.();
+                const msg = parsed?.mensaje || 'Ya giraste hoy. Debes esperar hasta mañana para volver a girar.';
+                setMensaje(msg);
+                setPuedeGirar(false);
+            } catch (_) {
+                setMensaje('Ya giraste hoy. Debes esperar hasta mañana para volver a girar.');
+                setPuedeGirar(false);
+            }
         }
     };
 
@@ -110,16 +111,16 @@ const RuletaDiaria = () => {
                     data={data}
                     onStopSpinning={alFinalizarGiro}
                     backgroundColors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F']}
-                    textColors={['#FFFFFF']}
+                    textColors={['#000000']}
                     outerBorderColor={'#FFD700'}
                     outerBorderWidth={8}
-                    innerRadius={20}
+                    innerRadius={28}
                     innerBorderColor={'#FFD700'}
                     innerBorderWidth={5}
                     radiusLineColor={'#FFD700'}
                     radiusLineWidth={2}
-                    fontSize={14}
-                    textDistance={70}
+                    fontSize={18}
+                    textDistance={55}
                     spinDuration={0.8}
                 />
             ) : (
@@ -129,7 +130,7 @@ const RuletaDiaria = () => {
             <button 
                 className="btn-girar-simple"
                 onClick={manejarGiro}
-                disabled={!puedeGirar || mustStartSpinning || data.length === 0 || cargando}
+                disabled={mustStartSpinning || data.length === 0 || cargando}
             >
                 {mustStartSpinning ? 'Girando...' : cargando ? 'Cargando...' : 'Girar'}
             </button>
@@ -144,7 +145,6 @@ const RuletaDiaria = () => {
             {mostrarPremio && premioGanado && (
                 <div className="premio-popup">
                     <div className="premio-popup-content">
-                        <h3>¡Premio!</h3>
                         <div className="premio-info">
                             <h4>{premioGanado.nombre}</h4>
                             <p>{premioGanado.descripcion}</p>

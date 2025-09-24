@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import '../pages/App.css';
 
-function RetosDia() {
+function RetosDia({ usuarioActual }) {
   const [misiones, setMisiones] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [misionCargando, setMisionCargando] = useState(null);
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/gamification/misiones/')
+    const params = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
+    fetch(`http://localhost:8000/api/gamification/misiones/${params}`)
       .then(res => res.json())
       .then(data => setMisiones(data.misiones || []))
       .catch(err => console.error(err));
-  }, []);
+  }, [usuarioActual]);
 
   const completarMision = (misionId) => {
     // Iniciar estado de carga
@@ -26,7 +27,9 @@ function RetosDia() {
       if (exito) {
         // ÉXITO: Completar la misión normalmente
         fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
-          method: 'POST'
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(usuarioActual?.id ? { usuario_id: usuarioActual.id } : {})
         })
         .then(res => res.json())
         .then(data => {
@@ -81,13 +84,25 @@ function RetosDia() {
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           margin: '10px 0'
         }}>
-          <span style={{
-            fontSize: '14px',
-            color: '#333',
-            fontWeight: '500'
-          }}>
-            {misiones[0].titulo}
-          </span>
+          <div style={{ flex: 1, paddingRight: 12 }}>
+            <div style={{
+              fontSize: '14px',
+              color: '#333',
+              fontWeight: '600',
+              marginBottom: 4
+            }}>
+              {misiones[0].titulo}
+            </div>
+            {misiones[0].descripcion && (
+              <div style={{
+                fontSize: '12px',
+                color: '#666',
+                lineHeight: 1.4
+              }}>
+                {misiones[0].descripcion}
+              </div>
+            )}
+          </div>
           <button 
             onClick={() => completarMision(misiones[0].id)}
             disabled={cargando || misionCargando === misiones[0].id}

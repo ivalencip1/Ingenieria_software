@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './MisionesPage.css';
 
-function MisionesPage({ onVolver }) {
+function MisionesPage({ onVolver, usuarioActual }) {
   const [misiones, setMisiones] = useState({
     retos_diarios: [],
     retos_semanales: [],
@@ -10,11 +10,12 @@ function MisionesPage({ onVolver }) {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/gamification/todas-misiones/')
+    const params = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
+    fetch(`http://localhost:8000/api/gamification/todas-misiones/${params}`)
       .then(res => res.json())
       .then(data => setMisiones(data))
       .catch(err => console.error(err));
-  }, []);
+  }, [usuarioActual]);
 
   const completarMision = (misionId) => {
     // Iniciar estado de carga
@@ -82,6 +83,11 @@ function MisionesPage({ onVolver }) {
     <div className="mision-card">
       <div className="mision-info">
         <h4 className="mision-titulo">{mision.titulo}</h4>
+        {mision.descripcion && (
+          <p className="mision-descripcion">
+            {mision.descripcion}
+          </p>
+        )}
         <div className="mision-detalles">
           <span className="mision-icono">{mision.icono}</span>
           <span className="mision-puntos">{mision.puntos_recompensa} MagnetoPoints</span>

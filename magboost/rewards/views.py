@@ -27,6 +27,7 @@ def obtener_premios_ruleta(request):
         'total_premios': premios.count()
     })
 
+
 @api_view(['GET'])
 def puede_girar_ruleta(request):
     usuario_id = request.GET.get('usuario_id')
@@ -37,21 +38,18 @@ def puede_girar_ruleta(request):
             return Response({'error': 'Usuario no encontrado'}, status=404)
     else:
         usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
-    
     hoy = timezone.now().date()
-    
-    # Verificar si ya giró hoy
-    ya_giro_hoy = RuletaDiariaUsuario.objects.filter(
-        usuario=usuario,
-        fecha_giro=hoy
-    ).exists()
-    
+    ya_giro_hoy = RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists()
+    if ya_giro_hoy:
+        return Response({
+            'puede_girar': False,
+            'mensaje': 'Ya giraste hoy. Vuelve mañana para intentarlo de nuevo.'
+        })
     return Response({
-        'puede_girar': not ya_giro_hoy,
-        'mensaje': 'Ya giraste la ruleta hoy. ¡Vuelve mañana!' if ya_giro_hoy else '¡Puedes girar la ruleta!'
+        'puede_girar': True,
+        'mensaje': '¡Puedes girar la ruleta!'
     })
 
 @api_view(['POST'])
@@ -68,17 +66,17 @@ def girar_ruleta(request):
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
-    hoy = timezone.now().date()
-    if RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists():
-        return Response({
-            'error': 'Ya giraste la ruleta hoy',
-            'mensaje': '¡Vuelve mañana para otro giro!'
-        }, status=400)
-    
     premios = PremioRuleta.objects.filter(activo=True)
     
     if not premios.exists():
         return Response({'error': 'No hay premios disponibles'}, status=404)
+    # Validar que no haya girado hoy
+    hoy = timezone.now().date()
+    if RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists():
+        return Response({
+            'error': 'YA_GIRO_HOY',
+            'mensaje': 'Ya giraste hoy. Debes esperar hasta mañana para volver a girar.'
+        }, status=400)
     premio_ganado = seleccionar_premio_aleatorio(premios)
     
     giro = RuletaDiariaUsuario.objects.create(
@@ -93,7 +91,6 @@ def girar_ruleta(request):
     return Response({
         'giro': serializer.data,
         'premio': PremioRuletaSerializer(premio_ganado).data,
-        'mensaje': f'¡Felicidades! Ganaste: {premio_ganado.nombre}'
     })
 
 @api_view(['GET'])

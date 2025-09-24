@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './TiendaRecompensas.css';
 
-const TiendaRecompensas = ({ onVolver }) => {
+
+const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
+    // All hooks at the top level
     const [categorias, setCategorias] = useState([]);
     const [historial, setHistorial] = useState([]);
     const [puntosUsuario, setPuntosUsuario] = useState(0);
@@ -10,33 +12,48 @@ const TiendaRecompensas = ({ onVolver }) => {
     const [vistaActual, setVistaActual] = useState('tienda');
     const [categoriaActual, setCategoriaActual] = useState('todas');
     const [mensaje, setMensaje] = useState(null);
+    const [mostrarPopup, setMostrarPopup] = useState(false);
+    const [recomendaciones, setRecomendaciones] = useState([]);
 
     useEffect(() => {
         cargarDatos();
-    }, []);
+        // cargarDatos is defined in this scope, so no need to add to deps
+    }, [usuarioActual]);
 
     const cargarDatos = async () => {
         try {
+            const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
             const [resCategorias, resHistorial] = await Promise.all([
-                fetch('http://localhost:8000/api/rewards/tienda/categorias/', { credentials: 'include' }),
-                fetch('http://localhost:8000/api/rewards/tienda/historial/', { credentials: 'include' })
+                fetch(`http://localhost:8000/api/rewards/tienda/categorias/${q}`, { credentials: 'include' }),
+                fetch(`http://localhost:8000/api/rewards/tienda/historial/${q}`, { credentials: 'include' })
             ]);
-            
             if (resCategorias.ok) {
                 const data = await resCategorias.json();
                 setCategorias(data.categorias);
                 setPuntosUsuario(data.puntos_usuario);
             }
-            
             if (resHistorial.ok) {
                 const data = await resHistorial.json();
                 setHistorial(data.historial);
             }
-        } catch (error) {
-            console.error('Error:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Mostrar recomendaciones solo al hacer clic en 'Disponible' de la recompensa específica
+    const mostrarRecomendaciones = async () => {
+        const res = await fetch('http://localhost:8000/api/core/perfil-completo/' + (usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : ''));
+        const data = await res.json();
+        let recs = [];
+        if (!data.perfil.avatar) {
+            recs.push('Sube tu foto de perfil en tu perfil.');
+        }
+        if ((data.biografia || '').split('\n').length < 10) {
+            recs.push('Tu biografía es muy corta, ¡hazla más larga!');
+        }
+        setRecomendaciones(recs);
+        setMostrarPopup(true);
     };
 
     const comprarRecompensa = async (recompensaId) => {
@@ -47,9 +64,7 @@ const TiendaRecompensas = ({ onVolver }) => {
                 credentials: 'include',
                 body: JSON.stringify({ recompensa_id: recompensaId })
             });
-            
             const data = await response.json();
-            
             if (response.ok) {
                 setPuntosUsuario(data.puntos_restantes);
                 setMensaje({ tipo: 'exito', texto: data.mensaje });
@@ -57,7 +72,6 @@ const TiendaRecompensas = ({ onVolver }) => {
             } else {
                 setMensaje({ tipo: 'error', texto: data.error });
             }
-            
             setTimeout(() => setMensaje(null), 3000);
         } catch (error) {
             setMensaje({ tipo: 'error', texto: 'Error de conexión' });
@@ -67,11 +81,8 @@ const TiendaRecompensas = ({ onVolver }) => {
 
     const abrirMagneto = () => {
         setCargandoMagneto(true);
-        
-        // Mostrar pantalla de carga por 2 segundos
         setTimeout(() => {
             setCargandoMagneto(false);
-            // Abrir Magneto365 en nueva pestaña
             window.open('https://www.magneto365.com/es', '_blank');
         }, 2000);
     };
@@ -94,6 +105,45 @@ const TiendaRecompensas = ({ onVolver }) => {
     }
 
     return (
+        <>
+        {/* Popup de recomendaciones */}
+        {mostrarPopup && (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999
+            }}>
+                <div style={{
+                    background: 'white',
+                    borderRadius: '18px',
+                    padding: '32px 24px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                    maxWidth: '350px',
+                    textAlign: 'center',
+                    fontSize: '18px',
+                    color: '#222',
+                    fontWeight: 'bold'
+                }}>
+                    <h2 style={{marginBottom: '18px'}}>¡Recomendaciones Magneto!</h2>
+                    <div style={{marginBottom: '12px'}}>Gracias a un asesor de Magneto tienes estas recomendaciones:</div>
+                    <ul style={{textAlign: 'left', fontWeight: 'normal', fontSize: '16px', marginBottom: '18px'}}>
+                        {recomendaciones.length === 0 ? (
+                            <li>¡Todo está perfecto en tu perfil!</li>
+                        ) : (
+                            recomendaciones.map((r, i) => <li key={i}>{r}</li>)
+                        )}
+                    </ul>
+                    <button onClick={() => setMostrarPopup(false)} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Cerrar</button>
+                </div>
+            </div>
+        )}
         <div className="tienda-container">
             <div className="header">
                 <button onClick={onVolver} className="btn-back">← Volver</button>
@@ -182,21 +232,39 @@ const TiendaRecompensas = ({ onVolver }) => {
                                 {compra.canjeado ? (
                                     <span style={{color: '#999'}}>✓ Utilizada</span>
                                 ) : (
-                                    <button 
-                                        onClick={abrirMagneto}
-                                        style={{
-                                            background: '#28a745',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '6px',
-                                            padding: '8px 16px',
-                                            cursor: 'pointer',
-                                            fontSize: '12px',
-                                            fontWeight: 'bold'
-                                        }}
-                                    >
-                                        🌟 Disponible
-                                    </button>
+                                    compra.recompensa.nombre === 'Mini-tutorial personalizado' ? (
+                                        <button 
+                                            onClick={mostrarRecomendaciones}
+                                            style={{
+                                                background: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '8px 16px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            🌟 Disponible
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={abrirMagneto}
+                                            style={{
+                                                background: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '8px 16px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            🌟 Disponible
+                                        </button>
+                                    )
                                 )}
                             </div>
                         </div>
@@ -204,6 +272,7 @@ const TiendaRecompensas = ({ onVolver }) => {
                 </div>
             )}
         </div>
+        </>
     );
 };
 
