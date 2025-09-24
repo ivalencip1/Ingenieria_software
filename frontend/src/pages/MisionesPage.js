@@ -144,7 +144,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       {/* Retos Diarios */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Diario</h2>
-        {(misiones.retos_diarios ?? []).map(mision => (
+        {misiones.retos_diarios.map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
@@ -152,7 +152,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       {/* Retos Semanales */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Semanal</h2>
-        {(misiones.retos_semanales ?? []).map(mision => (
+        {misiones.retos_semanales.map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
@@ -160,7 +160,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       {/* Retos Mensuales */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Mensual</h2>
-        {(misiones.retos_mensuales ?? []).map(mision => (
+        {misiones.retos_mensuales.map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
