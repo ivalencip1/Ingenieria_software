@@ -33,19 +33,35 @@ Puedes elegir un usuario de prueba e ingresar directamente para explorar la plat
 
 ---
 
-## 🛠️ Tecnologías
-- **Backend:** Django + Django REST Framework  
-- **Frontend:** React.js  
-- **Base de datos:** SQLite  
-- **Estilos:** CSS y JavaScript  
+## 🛠️ Tecnologías 
+- **Backend:** Django + Django REST Framework
+- **Frontend:** React.js
+- **Base de datos:** SQLite 
+- **Estilos:** CSS y js
 
----
-
-## ⚡ Instalación rápida
-
-### Backend
-```bash
+ ## ⚡ Instalación rápida ### Backend
+bash
 cd magboost
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
+
+### Frontend
+bash
+cd frontend
+npm install
+npm start
+## 📱 Uso 
+1. Servidor Django: http://localhost:8000
+2. App React: http://localhost:3000 3.
+3.  Admin Django por si se quire revisar base de datos e info: http://localhost:8000/admin
+
+## 📦 Apps del proyecto 
+- **core:** Usuarios y perfiles
+- **gamification:** Misiones, puntos, insignias
+- **rewards:** Tienda y recompensas -
+- **magnetosimulator:** Simulación de tareas web
+- **social:** Sistema de amigos (futuro) -
+- **notifications:** Notificaciones (futuro)
+
+--- **Proyecto Ingeniería de Software**
