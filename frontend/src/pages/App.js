@@ -16,6 +16,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil', 'ruleta'
+  const [usuarioActual, setUsuarioActual] = useState(null);
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -40,6 +41,12 @@ function App() {
     };
 
     fetchUsuarios();
+    
+    // Cargar usuario del demo selector si existe
+    const usuarioDemo = localStorage.getItem('usuario');
+    if (usuarioDemo) {
+      setUsuarioActual(JSON.parse(usuarioDemo));
+    }
   }, []);
 
   // Función para cambiar entre vistas
@@ -55,9 +62,9 @@ function App() {
       {/* Contenido según la vista */}
       {vistaActual === 'home' && (
         <div>
-          <UserHeader />
-          <RetosDia />
-          <ProgresoSemanal />
+          <UserHeader usuarioActual={usuarioActual} />
+          <RetosDia usuarioActual={usuarioActual} />
+          <ProgresoSemanal usuarioActual={usuarioActual} />
           <AccesoRapido onCambiarVista={cambiarVista} />
         </div>
       )}
@@ -78,15 +85,15 @@ function App() {
       )}
 
       {vistaActual === 'misiones' && (
-        <MisionesPage onVolver={() => setVistaActual('home')} />
+        <MisionesPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'tienda' && (
-        <TiendaRecompensas onVolver={() => setVistaActual('home')} />
+        <TiendaRecompensas onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'perfil' && (
-        <Perfil />
+        <Perfil usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'ruleta' && (

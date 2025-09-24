@@ -33,7 +33,6 @@ class MisionUsuario(models.Model):
 
 
 class Insignia(models.Model):
-    """Modelo para las insignias del sistema"""
     TIPO_CHOICES = [
         ('misiones_completadas', 'Por número de misiones completadas'),
         ('progreso_semanal', 'Por completar progreso semanal'),
@@ -75,12 +74,10 @@ class Insignia(models.Model):
         return None
     
     def get_icono_display(self):
-        """Retorna el emoji de fallback, no la URL de la imagen"""
         return self.icono_fallback
 
 
 class InsigniaUsuario(models.Model):
-    """Relación entre usuarios e insignias obtenidas"""
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     insignia = models.ForeignKey(Insignia, on_delete=models.CASCADE)
     fecha_obtenida = models.DateTimeField(auto_now_add=True)

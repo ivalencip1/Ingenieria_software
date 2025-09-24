@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum, F
 from django.contrib.auth import get_user_model
 from datetime import date
 import random
@@ -20,7 +19,6 @@ User = get_user_model()
 #-----------------------Nuevas vistas para la ruleta mejorada---------------------
 @api_view(['GET'])
 def obtener_premios_ruleta(request):
-    """Obtener todos los premios disponibles en la ruleta"""
     premios = PremioRuleta.objects.filter(activo=True).order_by('orden')
     serializer = PremioRuletaSerializer(premios, many=True)
     
@@ -31,7 +29,6 @@ def obtener_premios_ruleta(request):
 
 @api_view(['GET'])
 def puede_girar_ruleta(request):
-    """Verificar si el usuario puede girar la ruleta hoy"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
@@ -52,37 +49,29 @@ def puede_girar_ruleta(request):
 
 @api_view(['POST'])
 def girar_ruleta(request):
-    """Girar la ruleta diaria y obtener un premio"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
     hoy = timezone.now().date()
-    
-    # Verificar si ya giró hoy
     if RuletaDiariaUsuario.objects.filter(usuario=usuario, fecha_giro=hoy).exists():
         return Response({
             'error': 'Ya giraste la ruleta hoy',
             'mensaje': '¡Vuelve mañana para otro giro!'
         }, status=400)
     
-    # Obtener premios activos
     premios = PremioRuleta.objects.filter(activo=True)
     
     if not premios.exists():
         return Response({'error': 'No hay premios disponibles'}, status=404)
-    
-    # Seleccionar premio basado en probabilidades
     premio_ganado = seleccionar_premio_aleatorio(premios)
     
-    # Registrar el giro
     giro = RuletaDiariaUsuario.objects.create(
         usuario=usuario,
         premio_obtenido=premio_ganado
     )
     
-    # Aplicar el premio inmediatamente
     aplicar_premio(usuario, premio_ganado)
     
     serializer = RuletaDiariaUsuarioSerializer(giro)
@@ -95,9 +84,7 @@ def girar_ruleta(request):
 
 @api_view(['GET'])
 def historial_ruleta(request):
-    """Obtener historial de giros de ruleta del usuario"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
@@ -110,7 +97,6 @@ def historial_ruleta(request):
     })
 
 def seleccionar_premio_aleatorio(premios):
-    """Seleccionar un premio basado en las probabilidades"""
     opciones = []
     for premio in premios:
         entradas = int(premio.probabilidad * 100 / len(premios))
@@ -178,20 +164,14 @@ def api_recompensas(request):
     })
 
 def api_categorias_recompensas(request):
-    """Obtener todas las categorías de recompensas"""
-    # Usuario actual o primero para testing
     usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
     if not usuario:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
     
-    categorias = CategoriaRecompensa.objects.all()
-    
+    categorias = CategoriaRecompensa.objects.all()  
     categorias_data = []
     for categoria in categorias:
-        # Obtener recompensas de esta categoría
         recompensas = Recompensa.objects.filter(categoria=categoria, disponible=True)
-        
         recompensas_data = []
         for recompensa in recompensas:
             recompensas_data.append({
@@ -228,16 +208,11 @@ def api_comprar_recompensa(request):
         
         if not recompensa_id:
             return JsonResponse({'error': 'ID de recompensa requerido'}, status=400)
-        
-        # Usar transacción para asegurar consistencia
         with transaction.atomic():
-            # Obtener la recompensa
             try:
                 recompensa = Recompensa.objects.get(id=recompensa_id, disponible=True)
             except Recompensa.DoesNotExist:
                 return JsonResponse({'error': 'Recompensa no encontrada'}, status=404)
-            
-            # Verificar que el usuario tiene suficientes puntos
             usuario = request.user if request.user.is_authenticated else User.objects.first()
             
             if not usuario:
@@ -249,12 +224,8 @@ def api_comprar_recompensa(request):
                     'puntos_necesarios': recompensa.costo_puntos,
                     'puntos_actuales': usuario.puntos_totales
                 }, status=400)
-            
-            # Descontar puntos del usuario
             usuario.puntos_totales -= recompensa.costo_puntos
             usuario.save()
-            
-            # Crear registro de compra
             compra = CompraRecompensa.objects.create(
                 usuario=usuario,
                 recompensa=recompensa,
@@ -279,7 +250,6 @@ def api_comprar_recompensa(request):
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
 def api_historial_compras(request):
-    """Obtener historial de compras del usuario"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
@@ -309,7 +279,6 @@ def api_historial_compras(request):
 
 @csrf_exempt
 def api_marcar_canjeado(request):
-    """Marcar una recompensa como canjeada/utilizada"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
     

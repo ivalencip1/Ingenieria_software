@@ -5,6 +5,9 @@ from django.contrib.auth import get_user_model
 from rest_framework.decorators import api_view
 from .models import PerfilUsuario
 from .serializers import PerfilUsuarioSerializer
+from gamification.models import MisionUsuario, InsigniaUsuario
+from django.utils import timezone
+from datetime import timedelta
 
 User= get_user_model()
 
@@ -17,14 +20,14 @@ class PerfilUsuarioViewSet(viewsets.ModelViewSet):
     queryset = PerfilUsuario.objects.all()
     serializer_class = PerfilUsuarioSerializer
 
+
 @api_view(['GET'])
 def perfil_usuario(request):
-    """Obtener datos del usuario actual o el primero para testing"""
     if request.user.is_authenticated:
         serializer = PerfilUsuarioSerializer(request.user)
         return Response(serializer.data)
     else:
-        # Para testing sin login
+        # Para testing sin login -->temporal
         primer_usuario = User.objects.first()
         if primer_usuario:
             serializer = PerfilUsuarioSerializer(primer_usuario)
@@ -32,22 +35,15 @@ def perfil_usuario(request):
         return Response({'error': 'No hay usuarios'}, status=404)
 
 
+
 @api_view(['GET'])
 def perfil_completo(request):
-    """Obtener perfil completo del usuario con insignias, misiones y estadísticas"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
-   
-    from gamification.models import MisionUsuario, InsigniaUsuario
-    from django.utils import timezone
-    from datetime import timedelta
-    
-    # Datos básicos del usuario
     perfil_data = PerfilUsuarioSerializer(usuario).data
- 
     total_misiones = MisionUsuario.objects.filter(usuario=usuario, completada=True).count()
     
     misiones_diarias = MisionUsuario.objects.filter(
@@ -60,7 +56,6 @@ def perfil_completo(request):
         usuario=usuario, completada=True, mision__tipo='mensual'
     ).count()
     
-
     insignias_obtenidas = InsigniaUsuario.objects.filter(usuario=usuario).select_related('insignia')
     insignias_data = []
     

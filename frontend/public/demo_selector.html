@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="magboost2.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Selector de Usuario</title>
+</head>
+<body>
+    <div style="text-align: center; padding: 50px; font-family: Arial;">
+        <h1>Simulacion de inicio sesion en MAGBOOST</h1>
+        <h2>Seleccionar Usuario solo para la Demostración (temporal)</h2>
+        
+        <select id="userSelector" style="padding: 15px; font-size: 18px; margin: 20px;">
+            <option value="">-- Seleccionar usuario --</option>
+        </select>
+        
+        <br><br>
+        <button onclick="irAApp()" style="padding: 15px 30px; font-size: 18px; background: #ef983a; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Ir a la Aplicación
+        </button>
+        
+        <div id="userInfo" style="margin-top: 30px; display: none;">
+            <h3>Usuario Seleccionado:</h3>
+            <p id="selectedUser"></p>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- parte de diseño temporal para el primer 50%  -->
+    <script>
+        let selectedUser = null;
+        
+        fetch('http://localhost:8000/api/usuarios/')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('userSelector');
+                const usuarios = data.results || data;
+                
+                usuarios.forEach(usuario => {
+                    const option = document.createElement('option');
+                    option.value = usuario.id;
+                    option.textContent = `${usuario.username} - ${usuario.first_name || ''} ${usuario.last_name || ''}`;
+                    select.appendChild(option);
+                });
+            })
+            .catch(err => console.error('Error:', err));
+        
+        document.getElementById('userSelector').addEventListener('change', function() {
+            const userId = this.value;
+            if (userId) {
+                fetch('http://localhost:8000/api/usuarios/')
+                    .then(res => res.json())
+                    .then(data => {
+                        const usuarios = data.results || data;
+                        selectedUser = usuarios.find(u => u.id == userId);
+                        
+                        document.getElementById('selectedUser').textContent = 
+                            `${selectedUser.username} (${selectedUser.puntos_totales || 0} puntos)`;
+                        document.getElementById('userInfo').style.display = 'block';
+                    });
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+            }
+        });
+        
+        function irAApp() {
+            if (selectedUser) {
+                localStorage.setItem('usuario', JSON.stringify(selectedUser));
+                window.location.href = 'http://localhost:3000';
+            } else {
+                alert('Por favor selecciona un usuario primero');
+            }
+        }
+    </script>
+</body>
+</html>

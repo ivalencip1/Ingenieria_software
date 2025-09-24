@@ -40,7 +40,6 @@ class CompraRecompensa(models.Model):
         return f"{self.usuario.username} compró {self.recompensa.nombre}"
 
 class PremioRuleta(models.Model):
-    """Modelo para los premios disponibles en la ruleta diaria"""
     TIPO_PREMIO_CHOICES = [
         ('tip_laboral', 'Tip Laboral Extra'),
         ('acceso_curso', 'Acceso a Curso Corto'),
@@ -65,7 +64,6 @@ class PremioRuleta(models.Model):
         return f"{self.nombre} ({self.probabilidad}%)"
 
 class RuletaDiariaUsuario(models.Model):
-    """Registro de participaciones en la ruleta diaria por usuario"""
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     fecha_giro = models.DateField(auto_now_add=True)
     premio_obtenido = models.ForeignKey(PremioRuleta, on_delete=models.CASCADE)

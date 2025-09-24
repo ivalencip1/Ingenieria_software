@@ -40,7 +40,6 @@ def misiones_hoy(request):
 
 @api_view(['GET'])
 def misiones_completadas(request):
-    """Obtener lista de misiones completadas por el usuario"""
     usuario = request.user if request.user.is_authenticated else User.objects.first()
     
     if not usuario:
@@ -104,7 +103,6 @@ def progreso_semanal(request):
         completada=True,
         fecha_completada__date__range=[inicio_semana, fin_semana]
     ).count()
-    
     # Meta semanal
     meta_semanal = 10
     progreso_porcentaje = min((misiones_completadas / meta_semanal) * 100, 100)
@@ -133,8 +131,6 @@ def todas_las_misiones(request):
         'semanal': [],
         'mensual': []
     }
-    
-    # Aqui vamos aobtener misiones por cada tipo
     for tipo_key, tipo_label in Mision.TIPO_CHOICES:
         misiones = Mision.objects.filter(tipo=tipo_key, activa=True)
         
@@ -159,9 +155,6 @@ def todas_las_misiones(request):
 # ------------------ SISTEMA DE INSIGNIAS ---------
 
 def verificar_y_otorgar_insignias(usuario):
-
-
-    
     insignias_obtenidas = []
 
     insignias_disponibles = Insignia.objects.filter(
@@ -185,7 +178,7 @@ def verificar_y_otorgar_insignias(usuario):
             from django.utils import timezone
             hoy = timezone.now().date()
             semanas_completas = 0
-            for semana in range(insignia.criterio_valor * 2):  # Revisar las últimas N semanas
+            for semana in range(insignia.criterio_valor * 2):  
                 inicio_semana = hoy - timedelta(days=hoy.weekday() + (semana * 7))
                 fin_semana = inicio_semana + timedelta(days=6)
                 

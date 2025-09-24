@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Nuevas URLs para la ruleta mejorada
     path('ruleta/premios/', views.obtener_premios_ruleta, name='obtener_premios_ruleta'),
     path('ruleta/puede-girar/', views.puede_girar_ruleta, name='puede_girar_ruleta'),
     path('ruleta/girar/', views.girar_ruleta, name='girar_ruleta'),
