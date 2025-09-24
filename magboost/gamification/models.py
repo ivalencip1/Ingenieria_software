@@ -65,16 +65,17 @@ class Insignia(models.Model):
         return f"{self.nombre} ({self.get_tipo_display()})"
     
     def get_icono_url(self):
-        """Retorna la URL de la imagen o None si no hay imagen"""
+        """Retorna la URL completa de la imagen o None si no hay imagen"""
         if self.imagen and hasattr(self.imagen, 'url'):
-            return self.imagen.url
+            # Si ya empieza con http, devolverla tal como está
+            if self.imagen.url.startswith('http'):
+                return self.imagen.url
+            # Construir URL completa para desarrollo
+            return f"http://localhost:8000{self.imagen.url}"
         return None
     
     def get_icono_display(self):
-        """Retorna la imagen URL si existe, sino el emoji de fallback"""
-        imagen_url = self.get_icono_url()
-        if imagen_url:
-            return imagen_url
+        """Retorna el emoji de fallback, no la URL de la imagen"""
         return self.icono_fallback
 
 

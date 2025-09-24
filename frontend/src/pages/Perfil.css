@@ -314,34 +314,34 @@
 }
 
 .insignia-simple {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
   background: white;
-  border: 2px solid #e2e8f0;
+  border: 3px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .insignia-simple:hover {
   transform: scale(1.1);
   border-color: #667eea;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
 }
 
 .insignia-simple img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 85px;
+  height: 85px;
+  border-radius: 16px;
   object-fit: cover;
 }
 
 .insignia-fallback {
-  font-size: 28px;
+  font-size: 55px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -449,16 +449,16 @@
   }
   
   .insignia-simple {
-    width: 45px;
-    height: 45px;
+    width: 80px;
+    height: 80px;
   }
   
   .insignia-simple img {
-    width: 28px;
-    height: 28px;
+    width: 65px;
+    height: 65px;
   }
   
   .insignia-fallback {
-    font-size: 20px;
+    font-size: 45px;
   }
 }

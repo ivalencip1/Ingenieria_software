@@ -147,7 +147,7 @@ const Perfil = ({ onVolver }) => {
                 ))
               ) : (
                 <div className="no-misiones">
-                  <p>No hay misiones completadas aún</p>
+                  <p>En proceso de construccion</p>
                 </div>
               )}
             </div>
@@ -167,17 +167,26 @@ const Perfil = ({ onVolver }) => {
                     src={insignia.imagen_url} 
                     alt={insignia.nombre}
                     onError={(e) => {
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
+                      console.error('Error cargando imagen PNG:', insignia.imagen_url);
+                      // Si falla la imagen, mostrar emoji como último recurso
+                      e.target.parentElement.innerHTML = `<span class="insignia-fallback" style="display: flex; font-size: 28px; color: #666;">${insignia.icono_fallback || '🏅'}</span>`;
+                    }}
+                    style={{ 
+                      width: '85px', 
+                      height: '85px', 
+                      objectFit: 'cover',
+                      borderRadius: '16px'
                     }}
                   />
-                ) : null}
-                <span 
-                  className="insignia-fallback"
-                  style={{ display: insignia.imagen_url ? 'none' : 'flex' }}
-                >
-                  {insignia.icono_display}
-                </span>
+                ) : (
+                  // Solo mostrar emoji si NO hay imagen_url
+                  <span 
+                    className="insignia-fallback"
+                    style={{ display: 'flex' }}
+                  >
+                    {insignia.icono_fallback || '🏅'}
+                  </span>
+                )}
               </div>
             ))}
           </div>

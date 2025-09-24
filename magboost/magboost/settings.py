@@ -157,6 +157,9 @@ import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# URL base para archivos de media (para desarrollo)
+MEDIA_URL_BASE = 'http://localhost:8000'
+
 # Crear directorios de media si no existen
 os.makedirs(os.path.join(MEDIA_ROOT, 'avatars'), exist_ok=True)
 os.makedirs(os.path.join(MEDIA_ROOT, 'insignias'), exist_ok=True)
