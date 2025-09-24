@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './MisionesPage.css';
 
-function MisionesPage({ onVolver, usuarioActual }) {
+function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
   const [misiones, setMisiones] = useState({
     retos_diarios: [],
     retos_semanales: [],
@@ -144,7 +144,7 @@ function MisionesPage({ onVolver, usuarioActual }) {
       {/* Retos Diarios */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Diario</h2>
-        {misiones.retos_diarios.map(mision => (
+        {(misiones.retos_diarios ?? []).map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
@@ -152,7 +152,7 @@ function MisionesPage({ onVolver, usuarioActual }) {
       {/* Retos Semanales */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Semanal</h2>
-        {misiones.retos_semanales.map(mision => (
+        {(misiones.retos_semanales ?? []).map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
@@ -160,7 +160,7 @@ function MisionesPage({ onVolver, usuarioActual }) {
       {/* Retos Mensuales */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Mensual</h2>
-        {misiones.retos_mensuales.map(mision => (
+        {(misiones.retos_mensuales ?? []).map(mision => (
           <MisionCard key={mision.id} mision={mision} />
         ))}
       </div>
