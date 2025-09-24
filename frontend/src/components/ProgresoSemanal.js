@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import '../pages/App.css';
 
-function ProgresoSemanal() {
+function ProgresoSemanal({ usuarioActual = null }) {
   const [progreso, setProgreso] = useState({});
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/gamification/progreso/')
+    const userId = usuarioActual?.id;
+    const url = userId 
+      ? `http://localhost:8000/api/gamification/progreso/?user_id=${userId}`
+      : 'http://localhost:8000/api/gamification/progreso/';
+      
+    fetch(url)
       .then(res => res.json())
       .then(data => setProgreso(data))
-      .catch(err => console.error(err));
-  }, []);
+      .catch(err => console.error('Error al cargar progreso:', err));
+  }, [usuarioActual]);
 
   // Mensajes motivadores según porcentaje
   const obtenerMensaje = (porcentaje) => {

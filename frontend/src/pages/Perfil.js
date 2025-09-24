@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Perfil.css';
 
-const Perfil = ({ onVolver }) => {
+const Perfil = ({ onVolver, usuarioActual = null }) => {
   const [perfilData, setPerfilData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,7 +12,12 @@ const Perfil = ({ onVolver }) => {
   useEffect(() => {
     const fetchPerfilCompleto = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/api/core/perfil-completo/');
+        const userId = usuarioActual?.id;
+        const url = userId 
+          ? `http://localhost:8000/api/core/perfil-completo/?user_id=${userId}`
+          : 'http://localhost:8000/api/core/perfil-completo/';
+          
+        const response = await axios.get(url);
         setPerfilData(response.data);
       } catch (err) {
         setError('Error al cargar el perfil');
@@ -23,11 +28,16 @@ const Perfil = ({ onVolver }) => {
     };
 
     fetchPerfilCompleto();
-  }, []);
+  }, [usuarioActual]);
 
   const fetchMisionesCompletadas = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/gamification/misiones-completadas/');
+      const userId = usuarioActual?.id;
+      const url = userId 
+        ? `http://localhost:8000/api/gamification/misiones-completadas/?user_id=${userId}`
+        : 'http://localhost:8000/api/gamification/misiones-completadas/';
+        
+      const response = await axios.get(url);
       setMisionesCompletadas(response.data);
     } catch (err) {
       console.error('Error al cargar misiones:', err);

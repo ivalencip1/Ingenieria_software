@@ -2,16 +2,22 @@
 import React, { useState, useEffect } from 'react';
 import { usuariosAPI } from '../services/apiUsuarios';
 
-function UserHeader() {
+function UserHeader({ usuarioActual = null }) {
   const [usuario, setUsuario] = useState(null);
   
   useEffect(() => {
-  // Usar API específica de perfil
-  fetch('http://localhost:8000/api/core/perfil/')
-    .then(res => res.json())
-    .then(data => setUsuario(data))
-    .catch(err => console.error(err));
-}, []);
+    // Si se pasa un usuario actual, usarlo directamente
+    if (usuarioActual) {
+      setUsuario(usuarioActual);
+      return;
+    }
+    
+    // Si no, obtener datos del usuario desde la API
+    const userId = usuarioActual?.id;
+    usuariosAPI.perfilUsuario(userId)
+      .then(res => setUsuario(res.data))
+      .catch(err => console.error('Error al cargar usuario:', err));
+  }, [usuarioActual]);
 
   return (
     <header style={{

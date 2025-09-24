@@ -1,10 +1,13 @@
 // src/pages/App.js
 import React, { useEffect, useState } from "react";
 import { usuariosAPI } from "../services/apiUsuarios";
+import { apiAuth } from "../services/apiAuth";
 import UserHeader from "../components/UserHeader";
 import RetosDia from "../components/RetosDia";
 import ProgresoSemanal from "../components/ProgresoSemanal";
 import AccesoRapido from "../components/AccesoRapido";
+import RegistroRapido from "../components/RegistroRapido";
+import LoginRapido from "../components/LoginRapido";
 import MisionesPage from './MisionesPage';
 import TiendaRecompensas from './TiendaRecompensas';
 import Perfil from './Perfil';
@@ -16,6 +19,19 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil', 'ruleta'
+  
+  // Estados para autenticación
+  const [usuarioActual, setUsuarioActual] = useState(null);
+  const [mostrarRegistro, setMostrarRegistro] = useState(false);
+  const [mostrarLogin, setMostrarLogin] = useState(false);
+
+  // Verificar si hay usuario logueado al cargar la app
+  useEffect(() => {
+    const usuario = apiAuth.usuarioActual();
+    if (usuario) {
+      setUsuarioActual(usuario);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUsuarios = async () => {
@@ -47,17 +63,122 @@ function App() {
     setVistaActual(vista);
   };
 
+  // Funciones de autenticación
+  const handleRegistroExitoso = (datosUsuario) => {
+    // Guardar el usuario registrado y usarlo directamente
+    setUsuarioActual(datosUsuario);
+    apiAuth.guardarUsuario(datosUsuario);
+    setMostrarRegistro(false);
+    setVistaActual('home');
+  };
+
+  const handleLoginExitoso = (datosUsuario) => {
+    setUsuarioActual(datosUsuario);
+    apiAuth.guardarUsuario(datosUsuario);
+    setMostrarLogin(false);
+    setVistaActual('home');
+  };
+
+  const handleLogout = () => {
+    apiAuth.cerrarSesion();
+    setUsuarioActual(null);
+    setVistaActual('home');
+  };
+
+  const mostrarModalRegistro = () => {
+    setMostrarRegistro(true);
+    setMostrarLogin(false);
+  };
+
+  const mostrarModalLogin = () => {
+    setMostrarLogin(true);
+    setMostrarRegistro(false);
+  };
+
+  const cerrarModales = () => {
+    setMostrarRegistro(false);
+    setMostrarLogin(false);
+  };
+
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div style={{minHeight: '100vh', background: '#f5f5f5', paddingBottom: '80px'}}>
+      {/* Barra de autenticación */}
+      <div style={{
+        background: 'white',
+        padding: '10px 20px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{fontSize: '1.2rem', fontWeight: 'bold', color: '#333'}}>
+          MagBoost
+        </div>
+        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+          {usuarioActual ? (
+            <>
+              <span style={{color: '#666', fontSize: '0.9rem'}}>
+                Hola, {usuarioActual.username}
+              </span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '8px 15px',
+                  background: '#ff4757',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Cerrar Sesión
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={mostrarModalLogin}
+                style={{
+                  padding: '8px 15px',
+                  background: '#4facfe',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Iniciar Sesión
+              </button>
+              <button
+                onClick={mostrarModalRegistro}
+                style={{
+                  padding: '8px 15px',
+                  background: '#667eea',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Registro Estudiantes
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Contenido según la vista */}
       {vistaActual === 'home' && (
         <div>
-          <UserHeader />
-          <RetosDia />
-          <ProgresoSemanal />
+          <UserHeader usuarioActual={usuarioActual} />
+          <RetosDia usuarioActual={usuarioActual} />
+          <ProgresoSemanal usuarioActual={usuarioActual} />
           <AccesoRapido onCambiarVista={cambiarVista} />
         </div>
       )}
@@ -78,15 +199,15 @@ function App() {
       )}
 
       {vistaActual === 'misiones' && (
-        <MisionesPage onVolver={() => setVistaActual('home')} />
+        <MisionesPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'tienda' && (
-        <TiendaRecompensas onVolver={() => setVistaActual('home')} />
+        <TiendaRecompensas onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'perfil' && (
-        <Perfil />
+        <Perfil usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'ruleta' && (
@@ -238,6 +359,22 @@ function App() {
           Perfil
         </button>
       </nav>
+
+      {/* Modales de autenticación */}
+      {mostrarRegistro && (
+        <RegistroRapido 
+          onRegistroExitoso={handleRegistroExitoso}
+          onCancelar={cerrarModales}
+        />
+      )}
+
+      {mostrarLogin && (
+        <LoginRapido 
+          onLoginExitoso={handleLoginExitoso}
+          onCancelar={cerrarModales}
+          onMostrarRegistro={mostrarModalRegistro}
+        />
+      )}
     </div>
   );
 }

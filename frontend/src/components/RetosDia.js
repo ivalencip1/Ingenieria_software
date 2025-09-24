@@ -1,31 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import '../pages/App.css';
 
-function RetosDia() {
+function RetosDia({ usuarioActual = null }) {
   const [misiones, setMisiones] = useState([]);
   const [cargando, setCargando] = useState(false);
   const [misionCargando, setMisionCargando] = useState(null);
   
   useEffect(() => {
-    fetch('http://localhost:8000/api/gamification/misiones/')
+    const userId = usuarioActual?.id;
+    const url = userId 
+      ? `http://localhost:8000/api/gamification/misiones/?user_id=${userId}`
+      : 'http://localhost:8000/api/gamification/misiones/';
+      
+    fetch(url)
       .then(res => res.json())
       .then(data => setMisiones(data.misiones || []))
-      .catch(err => console.error(err));
-  }, []);
+      .catch(err => console.error('Error al cargar misiones:', err));
+  }, [usuarioActual]);
 
   const completarMision = (misionId) => {
     // Iniciar estado de carga
     setCargando(true);
     setMisionCargando(misionId);
     
-
     setTimeout(() => {
-
       const exito = Math.random() < 0.7;
       
       if (exito) {
         // ÉXITO: Completar la misión normalmente
-        fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
+        const userId = usuarioActual?.id;
+        const url = userId 
+          ? `http://localhost:8000/api/gamification/misiones/${misionId}/completar/?user_id=${userId}`
+          : `http://localhost:8000/api/gamification/misiones/${misionId}/completar/`;
+          
+        fetch(url, {
           method: 'POST'
         })
         .then(res => res.json())

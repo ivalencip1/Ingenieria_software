@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './TiendaRecompensas.css';
 
-const TiendaRecompensas = ({ onVolver }) => {
+const TiendaRecompensas = ({ onVolver, usuarioActual = null }) => {
     const [categorias, setCategorias] = useState([]);
     const [historial, setHistorial] = useState([]);
     const [puntosUsuario, setPuntosUsuario] = useState(0);
@@ -13,13 +13,21 @@ const TiendaRecompensas = ({ onVolver }) => {
 
     useEffect(() => {
         cargarDatos();
-    }, []);
+    }, [usuarioActual]);
 
     const cargarDatos = async () => {
         try {
+            const userId = usuarioActual?.id;
+            const categoriasUrl = userId 
+                ? `http://localhost:8000/api/rewards/tienda/categorias/?user_id=${userId}`
+                : 'http://localhost:8000/api/rewards/tienda/categorias/';
+            const historialUrl = userId 
+                ? `http://localhost:8000/api/rewards/tienda/historial/?user_id=${userId}`
+                : 'http://localhost:8000/api/rewards/tienda/historial/';
+                
             const [resCategorias, resHistorial] = await Promise.all([
-                fetch('http://localhost:8000/api/rewards/tienda/categorias/', { credentials: 'include' }),
-                fetch('http://localhost:8000/api/rewards/tienda/historial/', { credentials: 'include' })
+                fetch(categoriasUrl, { credentials: 'include' }),
+                fetch(historialUrl, { credentials: 'include' })
             ]);
             
             if (resCategorias.ok) {

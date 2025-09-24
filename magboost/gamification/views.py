@@ -15,7 +15,16 @@ User = get_user_model()
 
 @api_view(['GET'])
 def misiones_hoy(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Obtener usuario por ID o usar el primero
+    user_id = request.GET.get('user_id')
+    if user_id:
+        try:
+            usuario = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            usuario = User.objects.first()
+    else:
+        usuario = User.objects.first()
+    
     misiones_activas = Mision.objects.filter(activa=True)
     
     if usuario:
@@ -41,7 +50,15 @@ def misiones_hoy(request):
 @api_view(['GET'])
 def misiones_completadas(request):
     """Obtener lista de misiones completadas por el usuario"""
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Obtener usuario por ID o usar el primero
+    user_id = request.GET.get('user_id')
+    if user_id:
+        try:
+            usuario = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            usuario = User.objects.first()
+    else:
+        usuario = User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
@@ -66,7 +83,16 @@ def misiones_completadas(request):
 def completar_mision(request, mision_id):
     try:
         mision = Mision.objects.get(id=mision_id)
-        usuario = request.user if request.user.is_authenticated else User.objects.first()
+        
+        # Obtener usuario por ID o usar el primero
+        user_id = request.GET.get('user_id')
+        if user_id:
+            try:
+                usuario = User.objects.get(id=user_id)
+            except User.DoesNotExist:
+                usuario = User.objects.first()
+        else:
+            usuario = User.objects.first()
         
         if not usuario:
             return Response({'error': 'Usuario no encontrado'}, status=404)
@@ -91,7 +117,16 @@ def completar_mision(request, mision_id):
 
 @api_view(['GET'])
 def progreso_semanal(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Obtener usuario por ID o usar el primero
+    user_id = request.GET.get('user_id')
+    if user_id:
+        try:
+            usuario = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            usuario = User.objects.first()
+    else:
+        usuario = User.objects.first()
+        
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     
@@ -120,7 +155,16 @@ def progreso_semanal(request):
 
 @api_view(['GET'])
 def todas_las_misiones(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Obtener usuario por ID o usar el primero
+    user_id = request.GET.get('user_id')
+    if user_id:
+        try:
+            usuario = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            usuario = User.objects.first()
+    else:
+        usuario = User.objects.first()
+        
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
     misiones_completadas = MisionUsuario.objects.filter(
@@ -253,7 +297,15 @@ def calcular_racha_diaria(usuario):
 
 @api_view(['GET'])
 def insignias_usuario(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Obtener usuario por ID o usar el primero
+    user_id = request.GET.get('user_id')
+    if user_id:
+        try:
+            usuario = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            usuario = User.objects.first()
+    else:
+        usuario = User.objects.first()
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)

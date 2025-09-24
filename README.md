@@ -41,6 +41,17 @@ npm install
 npm start
 ```
 
+## 🧪 DEMO para Profesores
+Para probar la aplicación con diferentes usuarios:
+
+1. Inicia el backend: `python manage.py runserver` (puerto 8000)
+2. Inicia el frontend: `npm start` (puerto 3000) 
+3. **Abre la página demo**: http://localhost:3000/demo-selector.html
+4. Selecciona un usuario de la lista
+5. Haz clic en "Ir a la Aplicación"
+
+La aplicación se cargará mostrando los datos del usuario seleccionado.
+
 ## 📱 Uso
 1. Servidor Django: `http://localhost:8000`
 2. App React: `http://localhost:3000`

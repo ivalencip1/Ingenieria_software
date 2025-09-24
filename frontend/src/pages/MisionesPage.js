@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './MisionesPage.css';
 
-function MisionesPage({ onVolver }) {
+function MisionesPage({ onVolver, usuarioActual = null }) {
   const [misiones, setMisiones] = useState({
     retos_diarios: [],
     retos_semanales: [],
@@ -10,11 +10,16 @@ function MisionesPage({ onVolver }) {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/gamification/todas-misiones/')
+    const userId = usuarioActual?.id;
+    const url = userId 
+      ? `http://localhost:8000/api/gamification/todas-misiones/?user_id=${userId}`
+      : 'http://localhost:8000/api/gamification/todas-misiones/';
+      
+    fetch(url)
       .then(res => res.json())
       .then(data => setMisiones(data))
-      .catch(err => console.error(err));
-  }, []);
+      .catch(err => console.error('Error al cargar misiones:', err));
+  }, [usuarioActual]);
 
   const completarMision = (misionId) => {
     // Iniciar estado de carga
@@ -27,7 +32,12 @@ function MisionesPage({ onVolver }) {
       
       if (exito) {
         // ÉXITO: Completar la misión normalmente
-        fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
+        const userId = usuarioActual?.id;
+        const url = userId 
+          ? `http://localhost:8000/api/gamification/misiones/${misionId}/completar/?user_id=${userId}`
+          : `http://localhost:8000/api/gamification/misiones/${misionId}/completar/`;
+          
+        fetch(url, {
           method: 'POST'
         })
         .then(res => res.json())

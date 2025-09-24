@@ -26,4 +26,13 @@ export const usuariosAPI = {
   detalle: (id) => api.get(`/usuarios/${id}/`),
   actualizar: (id, data) => api.put(`/usuarios/${id}/`, data),
   eliminar: (id) => api.delete(`/usuarios/${id}/`),
+  // Nuevas funciones para el sistema sin autenticación
+  perfilUsuario: (userId = null) => {
+    const url = userId ? `/core/perfil/?user_id=${userId}` : `/core/perfil/`;
+    return api.get(url);
+  },
+  perfilCompleto: (userId = null) => {
+    const url = userId ? `/core/perfil-completo/?user_id=${userId}` : `/core/perfil-completo/`;
+    return api.get(url);
+  }
 };
