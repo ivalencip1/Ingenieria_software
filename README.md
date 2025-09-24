@@ -21,9 +21,11 @@ MAGBOOST ya cuenta con las siguientes funcionalidades:
 - **Perfil de usuario** con progreso visual.  
 - **Tienda de recompensas** para canjear logros.  
 - **Integración simulada** con la página web de Magneto.
--  **Ruleta diaria** para reclamar recompensas. 
-
-✨ Aunque el **registro e inicio de sesión** aún no fueron priorizados en este sprint, desarrollamos una **simulación temporal**:  
+-  **Ruleta diaria** para reclamar recompensas.
+  
+ ## 🚨 IMPORTANTE  
+ 
+Aunque el **registro e inicio de sesión** aún no fueron priorizados en este sprint, desarrollamos una **simulación temporal**:  
 Puedes elegir un usuario de prueba e ingresar directamente para explorar la plataforma.  
 
 👉 Solo debes correr la app como se explica en la sección de instalación y luego acceder a:  
