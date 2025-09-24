@@ -134,7 +134,7 @@ const RuletaDiaria = () => {
                 {mustStartSpinning ? 'Girando...' : cargando ? 'Cargando...' : 'Girar'}
             </button>
 
-                {/* Mostrar mensaje si no se puede girar */}
+                {/* Mensaje si no va a girar*/}
                 {!puedeGirar && mensaje && (
                     <div className="mensaje-ruleta" style={{ color: '#FF6B6B', marginTop: '10px' }}>
                         {mensaje}
