@@ -41,7 +41,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
         }
     };
 
-    // Mostrar recomendaciones solo al hacer clic en 'Disponible' de la recompensa específica
+    // Mostrar recomendaciones para el mini-tutorial personalizado
     const mostrarRecomendaciones = async () => {
         const res = await fetch('http://localhost:8000/api/core/perfil-completo/' + (usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : ''));
         const data = await res.json();
@@ -53,7 +53,17 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
             recs.push('Tu biografía es muy corta, ¡hazla más larga!');
         }
         setRecomendaciones(recs);
-        setMostrarPopup(true);
+        setMostrarPopup('tutorial');
+    };
+
+    // Mostrar popup de consejos para Potencia tus habilidades
+    const mostrarConsejosPotencia = () => {
+        setRecomendaciones([
+            'Networking: Construye una red de contactos sólida con profesionales del sector que te interesa.',
+            'Formación constante: Participa en cursos y asiste a conferencias para mantenerte actualizado.',
+            'Habilidades transferibles: Identifica y resalta las habilidades que puedes aplicar en diferentes roles y sectores.'
+        ]);
+        setMostrarPopup('potencia');
     };
 
     const comprarRecompensa = async (recompensaId) => {
@@ -106,8 +116,8 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
 
     return (
         <>
-        {/* Popup de recomendaciones */}
-        {mostrarPopup && (
+        {/* Popup de recomendaciones y consejos */}
+        {mostrarPopup === 'tutorial' && (
             <div style={{
                 position: 'fixed',
                 top: 0,
@@ -139,6 +149,39 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                         ) : (
                             recomendaciones.map((r, i) => <li key={i}>{r}</li>)
                         )}
+                    </ul>
+                    <button onClick={() => setMostrarPopup(false)} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Cerrar</button>
+                </div>
+            </div>
+        )}
+        {mostrarPopup === 'potencia' && (
+            <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                background: 'rgba(0,0,0,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999
+            }}>
+                <div style={{
+                    background: 'white',
+                    borderRadius: '18px',
+                    padding: '32px 24px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+                    maxWidth: '350px',
+                    textAlign: 'center',
+                    fontSize: '18px',
+                    color: '#222',
+                    fontWeight: 'bold'
+                }}>
+                    <h2 style={{marginBottom: '18px'}}>Desarrollo Profesional Continuo</h2>
+                    <div style={{marginBottom: '12px'}}>Consejos para potenciar tus habilidades:</div>
+                    <ul style={{textAlign: 'left', fontWeight: 'normal', fontSize: '16px', marginBottom: '18px'}}>
+                        {recomendaciones.map((r, i) => <li key={i}>{r}</li>)}
                     </ul>
                     <button onClick={() => setMostrarPopup(false)} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Cerrar</button>
                 </div>
@@ -235,6 +278,22 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                                     compra.recompensa.nombre === 'Mini-tutorial personalizado' ? (
                                         <button 
                                             onClick={mostrarRecomendaciones}
+                                            style={{
+                                                background: '#28a745',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '8px 16px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            🌟 Disponible
+                                        </button>
+                                    ) : compra.recompensa.nombre === 'Potencia tus habilidades' ? (
+                                        <button 
+                                            onClick={mostrarConsejosPotencia}
                                             style={{
                                                 background: '#28a745',
                                                 color: 'white',
