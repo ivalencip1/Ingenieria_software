@@ -9,10 +9,20 @@ const RuletaDiaria = ({ usuarioActual }) => {
     const [mustStartSpinning, setMustStartSpinning] = useState(false);
     const [prizeNumber, setPrizeNumber] = useState(0);
     const [premioGanado, setPremioGanado] = useState(null);
+    // Eliminado puntosSumados, ya no se usa
     const [mensaje, setMensaje] = useState('');
     const [mostrarPremio, setMostrarPremio] = useState(false);
     const [cargando, setCargando] = useState(true);
+    const [mostrarInvitaPopup, setMostrarInvitaPopup] = useState(false);
+    const [mostrarRecompensaPopup, setMostrarRecompensaPopup] = useState(false);
 
+<<<<<<< HEAD
+=======
+    useEffect(() => {
+        cargarDatos();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+>>>>>>> 563b5fcec8406403afd5d9a4738986a99164723d
 
     // ================= FUNCIONES AUXILIARES =================
     const cargarDatos = useCallback(async () => {
@@ -23,7 +33,18 @@ const RuletaDiaria = ({ usuarioActual }) => {
                 puedeGirarRuleta(usuarioActual?.id)
             ]);
 
-            setPremios(premiosData.premios || []);
+            let premios = premiosData.premios || [];
+            // Aumentar la probabilidad de +80 puntos duplicando el premio
+            const premios80 = premios.filter(p => p.valor === 80);
+            if (premios80.length > 0) {
+                // Duplicar el premio de 80 puntos 2 veces más (total 3)
+                premios = [
+                    ...premios,
+                    ...premios80,
+                    ...premios80
+                ];
+            }
+            setPremios(premios);
             setPuedeGirar(puedeGirarData.puede_girar);
             setMensaje(puedeGirarData.mensaje);
         } catch (error) {
@@ -71,8 +92,12 @@ const RuletaDiaria = ({ usuarioActual }) => {
 
     const alFinalizarGiro = () => {
         setMustStartSpinning(false);
-        setMostrarPremio(true);
-        // Actualizar historial
+        // Si el premio es Invita-gana, mostrar popup especial
+        if (premioGanado && premioGanado.nombre === 'Invita-gana') {
+            setMostrarInvitaPopup(true);
+        } else {
+            setMostrarPremio(true);
+        }
         cargarDatos();
     };
 
@@ -134,7 +159,41 @@ const RuletaDiaria = ({ usuarioActual }) => {
                     </div>
                 )}
 
-            {mostrarPremio && premioGanado && (
+            {/* Popup especial para Invita-gana */}
+            {mostrarInvitaPopup && (
+                <div className="premio-popup">
+                    <div className="premio-popup-content">
+                        <div className="premio-info">
+                            <h4>Invita-gana</h4>
+                            <p>Doble puntos si invitas a un amigo en este día</p>
+                            <a href="https://www.magneto365.com/es" target="_blank" rel="noopener noreferrer" style={{display:'block',marginBottom:'18px',color:'#007bff',textDecoration:'underline',fontWeight:'normal'}}>https://www.magneto365.com/es</a>
+                        </div>
+                        <button onClick={() => { setMostrarInvitaPopup(false); setMostrarRecompensaPopup(true); }}>
+                            Continuar
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Popup de recompensa final para Invita-gana */}
+            {mostrarRecompensaPopup && (
+                <div className="premio-popup">
+                    <div className="premio-popup-content">
+                        <div className="premio-info">
+                            <h4>¡Recompensa dada!</h4>
+                            <p>Has ganado 160 puntos por Invita-gana</p>
+                            <p>+160 puntos</p>
+                        </div>
+                        <button onClick={() => {
+                            setMostrarRecompensaPopup(false);
+                            setMostrarPremio(false);
+                        }}>
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            )}
+            {/* Popup normal para otros premios */}
+            {mostrarPremio && premioGanado && premioGanado.nombre !== 'Invita-gana' && (
                 <div className="premio-popup">
                     <div className="premio-popup-content">
                         <div className="premio-info">
@@ -144,7 +203,16 @@ const RuletaDiaria = ({ usuarioActual }) => {
                                 <p>+{premioGanado.valor} puntos</p>
                             )}
                         </div>
-                        <button onClick={() => setMostrarPremio(false)}>
+                        <button onClick={() => {
+                            setMostrarPremio(false);
+                            // Sumar puntos solo si el premio es +80
+                            if (premioGanado.valor === 80 && usuarioActual) {
+                                const nuevosPuntos = (usuarioActual.puntos_totales || 0) + 80;
+                                const usuarioActualizado = { ...usuarioActual, puntos_totales: nuevosPuntos };
+                                localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                                window.location.reload();
+                            }
+                        }}>
                             Cerrar
                         </button>
                     </div>

@@ -56,6 +56,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
     };
 
     const comprarRecompensa = async (recompensaId) => {
+        setCargandoMagneto(true);
         try {
             const response = await fetch('http://localhost:8000/api/rewards/tienda/comprar/', {
                 method: 'POST',
@@ -65,17 +66,19 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
             });
             const data = await response.json();
             if (response.ok) {
-                setPuntosUsuario(data.puntos_restantes);
                 setMensaje({ tipo: 'exito', texto: data.mensaje });
-                cargarDatos();
             } else {
                 setMensaje({ tipo: 'error', texto: data.error });
             }
-            setTimeout(() => setMensaje(null), 3000);
+            setTimeout(() => setMensaje(null), 2000);
         } catch (error) {
             setMensaje({ tipo: 'error', texto: 'Error de conexión' });
-            setTimeout(() => setMensaje(null), 3000);
+            setTimeout(() => setMensaje(null), 2000);
         }
+        setTimeout(() => {
+            setCargandoMagneto(false);
+            window.location.reload();
+        }, 2000);
     };
 
     const abrirMagneto = () => {

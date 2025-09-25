@@ -60,7 +60,8 @@ function App() {
       }
     };
     actualizarUsuarioActual();
-  }, [usuarioActual?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usuarioActual]);
 
   // Función para cambiar entre vistas
   const cambiarVista = (vista) => {
@@ -98,7 +99,11 @@ function App() {
       )}
 
       {vistaActual === 'misiones' && (
-        <MisionesPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
+        <MisionesPage 
+          onVolver={() => setVistaActual('home')} 
+          usuarioActual={usuarioActual} 
+          onActualizarUsuario={setUsuarioActual}
+        />
       )}
 
       {vistaActual === 'tienda' && (
