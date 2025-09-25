@@ -47,21 +47,20 @@ function App() {
     }
   }, []);
 
-  // Actualizar puntos del usuario actual cada vez que cambia
-  useEffect(() => {
+useEffect(() => {
+  if (usuarioActual && usuarioActual.id) {
     const actualizarUsuarioActual = async () => {
-      if (usuarioActual && usuarioActual.id) {
-        try {
-          const res = await usuariosAPI.detalle(usuarioActual.id);
-          setUsuarioActual(res.data);
-        } catch (error) {
-          // Si falla, mantener el usuario actual
-        }
+      try {
+        const res = await usuariosAPI.detalle(usuarioActual.id);
+        setUsuarioActual(res.data);
+      } catch (error) {
+        // Si falla, mantener el usuario actual
       }
     };
     actualizarUsuarioActual();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usuarioActual]);
+  }
+
+}, [usuarioActual?.id]);
 
   // Función para cambiar entre vistas
   const cambiarVista = (vista) => {

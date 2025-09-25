@@ -19,22 +19,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       .catch(err => console.error(err));
   }, [usuarioActual]);
 
-<<<<<<< HEAD
   const completarMision = (misionId) => {
-=======
-  const completarMision = (misionId, misionTitulo) => {
-    // Si es la misión especial, mostrar popup antes de cargar
-    if (misionTitulo === 'Amigos por siempre') {
-      setMisionPendiente({ id: misionId, titulo: misionTitulo });
-      setMostrarPopup(true);
-      return;
-    }
-    iniciarCargaMision(misionId);
-  };
-
-  // Lógica de carga magnética (separada para reutilizar)
-  const iniciarCargaMision = (misionId) => {
->>>>>>> 563b5fcec8406403afd5d9a4738986a99164723d
     setCargando(true);
     setTimeout(() => {
       const exito = Math.random() < 0.7;
@@ -83,10 +68,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
         <p className="misiones-loading-subtitle">
           Esperando a que magneto nos diga que lo hiciste...
         </p>
-<<<<<<< HEAD
         
-=======
->>>>>>> 563b5fcec8406403afd5d9a4738986a99164723d
         <div className="misiones-loading-bar-container">
           <div className="misiones-loading-bar"></div>
         </div>

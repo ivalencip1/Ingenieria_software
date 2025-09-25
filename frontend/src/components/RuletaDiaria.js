@@ -16,13 +16,6 @@ const RuletaDiaria = ({ usuarioActual }) => {
     const [mostrarInvitaPopup, setMostrarInvitaPopup] = useState(false);
     const [mostrarRecompensaPopup, setMostrarRecompensaPopup] = useState(false);
 
-<<<<<<< HEAD
-=======
-    useEffect(() => {
-        cargarDatos();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
->>>>>>> 563b5fcec8406403afd5d9a4738986a99164723d
 
     // ================= FUNCIONES AUXILIARES =================
     const cargarDatos = useCallback(async () => {
