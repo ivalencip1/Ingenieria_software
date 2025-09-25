@@ -39,7 +39,8 @@ Puedes elegir un usuario de prueba e ingresar directamente para explorar la plat
 - **Base de datos:** SQLite 
 - **Estilos:** CSS y js
 
- ## ⚡ Instalación rápida ### Backend
+ ## ⚡ Instalación rápida 
+ ### Backend
 bash
 cd magboost
 pip install -r requirements.txt
