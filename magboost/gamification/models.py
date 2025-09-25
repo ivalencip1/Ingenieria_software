@@ -45,14 +45,11 @@ class Insignia(models.Model):
     nombre = models.CharField(max_length=200)
     descripcion = models.TextField()
     imagen = models.ImageField(upload_to='insignias/', blank=True, null=True, help_text="Imagen de la insignia")
-    icono_fallback = models.CharField(max_length=50, default='🏅', help_text="Emoji como fallback si no hay imagen")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES)
-    
-    # Criterios para obtener la insignia
+
+    # criterios de insignia
     criterio_valor = models.IntegerField(help_text="Valor necesario para obtener la insignia (ej: 10 misiones)")
     criterio_extra = models.CharField(max_length=100, blank=True, null=True, help_text="Criterio adicional si es necesario")
-    
-    # Configuración
     activa = models.BooleanField(default=True)
     orden = models.IntegerField(default=0, help_text="Orden de dificultad (menor = más fácil)")
     fecha_creacion = models.DateTimeField(auto_now_add=True)
@@ -64,7 +61,6 @@ class Insignia(models.Model):
         return f"{self.nombre} ({self.get_tipo_display()})"
     
     def get_icono_url(self):
-        """Retorna la URL completa de la imagen o None si no hay imagen"""
         if self.imagen and hasattr(self.imagen, 'url'):
             # Si ya empieza con http, devolverla tal como está
             if self.imagen.url.startswith('http'):
@@ -73,8 +69,6 @@ class Insignia(models.Model):
             return f"http://localhost:8000{self.imagen.url}"
         return None
     
-    def get_icono_display(self):
-        return self.icono_fallback
 
 
 class InsigniaUsuario(models.Model):

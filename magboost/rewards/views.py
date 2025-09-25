@@ -93,6 +93,7 @@ def girar_ruleta(request):
         'premio': PremioRuletaSerializer(premio_ganado).data,
     })
 
+
 @api_view(['GET'])
 def historial_ruleta(request):
     usuario = request.user if request.user.is_authenticated else User.objects.first()

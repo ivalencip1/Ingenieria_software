@@ -72,8 +72,6 @@ def perfil_completo(request):
             'nombre': insignia_usuario.insignia.nombre,
             'descripcion': insignia_usuario.insignia.descripcion,
             'imagen_url': insignia_usuario.insignia.get_icono_url(),
-            'icono_fallback': insignia_usuario.insignia.icono_fallback,
-            'icono_display': insignia_usuario.insignia.get_icono_display(),
             'tipo': insignia_usuario.insignia.get_tipo_display(),
             'fecha_obtenida': insignia_usuario.fecha_obtenida.isoformat(),
         })

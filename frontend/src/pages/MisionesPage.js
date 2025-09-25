@@ -18,12 +18,8 @@ function MisionesPage({ onVolver, usuarioActual }) {
   }, [usuarioActual]);
 
   const completarMision = (misionId) => {
-    // Iniciar estado de carga
     setCargando(true);
-    
-    // Simular procesamiento magnético con probabilidad aleatoria
     setTimeout(() => {
-      // Generar probabilidad aleatoria (70% éxito, 30% fallo)
       const exito = Math.random() < 0.7;
       
       if (exito) {
@@ -41,7 +37,7 @@ function MisionesPage({ onVolver, usuarioActual }) {
         .catch(err => {
           setCargando(false);
           console.error('Error:', err);
-          alert('❌ Error de conexión magnética');
+          alert('❌ Error de conexión con MAGNETO');
         });
       } else {
         // FALLO: No se pudo completar el reto
@@ -61,7 +57,6 @@ function MisionesPage({ onVolver, usuarioActual }) {
           Esperando a que magneto nos diga que lo hiciste...
         </p>
         
-        {/* Barra de progreso magnética */}
         <div className="misiones-loading-bar-container">
           <div className="misiones-loading-bar"></div>
         </div>
@@ -111,7 +106,6 @@ function MisionesPage({ onVolver, usuarioActual }) {
 
   return (
     <div className="misiones-page">
-      {/* Header */}
       <div className="misiones-header">
         <button 
           onClick={onVolver}
@@ -119,13 +113,11 @@ function MisionesPage({ onVolver, usuarioActual }) {
         >
           ←
         </button>
-        <div className="misiones-header-icon">📋</div>
         <h1 className="misiones-header-title">
-          Módulo de Retos / Misiones
+          Misiones
         </h1>
       </div>
 
-      {/* Retos Diarios */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Diario</h2>
         {misiones.retos_diarios.map(mision => (
@@ -133,7 +125,7 @@ function MisionesPage({ onVolver, usuarioActual }) {
         ))}
       </div>
 
-      {/* Retos Semanales */}
+
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Semanal</h2>
         {misiones.retos_semanales.map(mision => (
@@ -141,7 +133,6 @@ function MisionesPage({ onVolver, usuarioActual }) {
         ))}
       </div>
 
-      {/* Retos Mensuales */}
       <div className="misiones-section">
         <h2 className="misiones-section-title">Reto Mensual</h2>
         {misiones.retos_mensuales.map(mision => (

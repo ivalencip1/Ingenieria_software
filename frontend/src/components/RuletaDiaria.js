@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { obtenerPremiosRuleta, puedeGirarRuleta, girarRuleta } from '../services/apiRuleta';
 import './RuletaDiaria.css';
@@ -13,11 +13,9 @@ const RuletaDiaria = ({ usuarioActual }) => {
     const [mostrarPremio, setMostrarPremio] = useState(false);
     const [cargando, setCargando] = useState(true);
 
-    useEffect(() => {
-        cargarDatos();
-    }, []);
 
-    const cargarDatos = async () => {
+    // ================= FUNCIONES AUXILIARES =================
+    const cargarDatos = useCallback(async () => {
         try {
             setCargando(true);
             const [premiosData, puedeGirarData] = await Promise.all([
@@ -34,18 +32,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
         } finally {
             setCargando(false);
         }
-    };
-
-    const obtenerIconoPremio = (tipo) => {
-        const iconos = {
-            'tip_laboral': '💡',
-            'acceso_curso': '📚',
-            'magneto_50': '⚡',
-            'magneto_80': '🔥',
-            'invita_gana': '👥'
-        };
-        return iconos[tipo] || '🎁';
-    };
+    }, [usuarioActual]);
 
     const obtenerColorPremio = (index) => {
         const colores = [
@@ -54,17 +41,6 @@ const RuletaDiaria = ({ usuarioActual }) => {
         ];
         return colores[index % colores.length];
     };
-
-    // Preparar datos para la ruleta
-    const data = premios.length > 0 ? premios.map((premio, index) => ({
-        option: `${obtenerIconoPremio(premio.tipo)} ${premio.nombre}`,
-        style: { 
-            backgroundColor: obtenerColorPremio(index),
-            textColor: '#000000',
-            fontSize: 18,
-            fontWeight: 'bold'
-        }
-    })) : [];
 
     const manejarGiro = async () => {
         if (!puedeGirar || mustStartSpinning) return;
@@ -99,6 +75,22 @@ const RuletaDiaria = ({ usuarioActual }) => {
         // Actualizar historial
         cargarDatos();
     };
+
+    // ================== FIN FUNCIONES AUXILIARES =============
+
+    useEffect(() => {
+        cargarDatos();
+    }, [cargarDatos]);
+
+    const data = premios.length > 0 ? premios.map((premio, index) => ({
+        option: premio.nombre,
+        style: { 
+            backgroundColor: obtenerColorPremio(index),
+            textColor: '#000000',
+            fontSize: 18,
+            fontWeight: 'bold'
+        }
+    })) : [];
 
     return (
         <div className="ruleta-container-simple">

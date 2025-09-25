@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './TiendaRecompensas.css';
 
 
 const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
-    // All hooks at the top level
     const [categorias, setCategorias] = useState([]);
     const [historial, setHistorial] = useState([]);
     const [puntosUsuario, setPuntosUsuario] = useState(0);
@@ -15,12 +14,8 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
     const [mostrarPopup, setMostrarPopup] = useState(false);
     const [recomendaciones, setRecomendaciones] = useState([]);
 
-    useEffect(() => {
-        cargarDatos();
-        // cargarDatos is defined in this scope, so no need to add to deps
-    }, [usuarioActual]);
 
-    const cargarDatos = async () => {
+    const cargarDatos = useCallback(async () => {
         try {
             const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
             const [resCategorias, resHistorial] = await Promise.all([
@@ -39,9 +34,13 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [usuarioActual]);
 
-    // Mostrar recomendaciones solo al hacer clic en 'Disponible' de la recompensa específica
+    useEffect(() => {
+        cargarDatos();
+    }, [usuarioActual, cargarDatos]);
+
+
     const mostrarRecomendaciones = async () => {
         const res = await fetch('http://localhost:8000/api/core/perfil-completo/' + (usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : ''));
         const data = await res.json();
@@ -106,7 +105,6 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
 
     return (
         <>
-        {/* Popup de recomendaciones */}
         {mostrarPopup && (
             <div style={{
                 position: 'fixed',
@@ -176,7 +174,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                 </button>
             </div>
 
-            {/* Categorías - solo se muestran en vista de tienda */}
+
             {vistaActual === 'tienda' && (
                 <div className="category-tabs">
                     <button 
@@ -246,7 +244,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                                                 fontWeight: 'bold'
                                             }}
                                         >
-                                            🌟 Disponible
+                                             Disponible
                                         </button>
                                     ) : (
                                         <button 
@@ -262,7 +260,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                                                 fontWeight: 'bold'
                                             }}
                                         >
-                                            🌟 Disponible
+                                             Disponible
                                         </button>
                                     )
                                 )}

@@ -23,7 +23,6 @@ function AccesoRapido({ onCambiarVista }) {
   };
 
   const manejarRuleta = async () => {
-    // Siempre ir a la página de ruleta para la experiencia completa
     if (onCambiarVista) {
       onCambiarVista('ruleta');
     }
@@ -93,5 +92,4 @@ function AccesoRapido({ onCambiarVista }) {
     </div>
   );
 }
-
 export default AccesoRapido;

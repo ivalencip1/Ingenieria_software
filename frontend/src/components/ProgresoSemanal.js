@@ -12,7 +12,6 @@ function ProgresoSemanal({ usuarioActual }) {
       .catch(err => console.error(err));
   }, [usuarioActual]);
 
-  // Mensajes motivadores según porcentaje
   const obtenerMensaje = (porcentaje) => {
     if (porcentaje === 0) return "🌟 ¡Comienza tu aventura magnética!";
     if (porcentaje <= 25) return "🚀 ¡Buen comienzo!";
@@ -29,17 +28,13 @@ function ProgresoSemanal({ usuarioActual }) {
   return (
     <div className="progreso-container">
       
-      {/* Título y progreso */}
       <div className="progreso-header">
         <h3 className="progreso-title">Progreso Semanal</h3>
         <span className="progreso-stats">
           {completadas} de {total} misiones
         </span>
       </div>
-
-      {/* Barra de progreso minimalista */}
       <div className="progreso-barra-container">
-        {/* Estrella al lado izquierdo */}
         <div className="progreso-estrella">
           ⭐
         </div>
@@ -52,7 +47,6 @@ function ProgresoSemanal({ usuarioActual }) {
         </div>
       </div>
 
-      {/* Mensaje motivador */}
       <div className="progreso-mensaje">
         {obtenerMensaje(porcentaje)}
       </div>

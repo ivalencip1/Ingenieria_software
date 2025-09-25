@@ -50,5 +50,5 @@ def verificar_tarea_magneto(request):
         'usuario_id': usuario_id,
         'verificacion_exitosa': verificacion_exitosa,
         'timestamp': timezone.now().isoformat(),
-        'mensaje': '✅ Tarea verificada en Magneto' if verificacion_exitosa else '❌ No se pudo verificar la tarea'
+        'mensaje': 'Tarea verificada en Magneto' if verificacion_exitosa else '❌ No se pudo verificar la tarea'
     })

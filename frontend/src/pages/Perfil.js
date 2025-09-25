@@ -59,7 +59,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
     return (
       <div className="perfil-container">
         <div className="error">
-          <p>❌ {error}</p>
+          <p> {error}</p>
         </div>
       </div>
     );
@@ -100,14 +100,10 @@ const Perfil = ({ onVolver, usuarioActual }) => {
           </div>
         </div>
       </div>
-
-      {/* Biografía separada */}
       <div className="biografia-section">
-        <h3>📝 Biografía</h3>
+        <h3> Biografía</h3>
         <p className="biografia-texto">{biografia}</p>
       </div>
-
-      {/* Progreso hacia 100 misiones */}
       <div className="progreso-semanal">
         <h3>Progreso de Misiones</h3>
         <div className="progreso-bar-container">
@@ -122,7 +118,6 @@ const Perfil = ({ onVolver, usuarioActual }) => {
           </span>
         </div>
         
-        {/* Desplegable Ver más */}
         <div className="ver-mas-container">
           <button 
             className="ver-mas-btn" 
@@ -176,7 +171,6 @@ const Perfil = ({ onVolver, usuarioActual }) => {
                     alt={insignia.nombre}
                     onError={(e) => {
                       console.error('Error cargando imagen PNG:', insignia.imagen_url);
-                      // Si falla la imagen, mostrar emoji como último recurso
                       e.target.parentElement.innerHTML = `<span class="insignia-fallback" style="display: flex; font-size: 28px; color: #666;">${insignia.icono_fallback || '🏅'}</span>`;
                     }}
                     style={{ 
@@ -187,7 +181,6 @@ const Perfil = ({ onVolver, usuarioActual }) => {
                     }}
                   />
                 ) : (
-                  // Solo mostrar emoji si NO hay imagen_url
                   <span 
                     className="insignia-fallback"
                     style={{ display: 'flex' }}
@@ -200,7 +193,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
           </div>
         ) : (
           <div className="no-insignias">
-            <p>🎯 ¡Completa misiones para obtener tu primera insignia!</p>
+            <p>¡Completa misiones para obtener tu primera insignia!</p>
           </div>
         )}
       </div>
