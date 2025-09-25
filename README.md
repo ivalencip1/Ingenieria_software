@@ -39,18 +39,20 @@ Puedes elegir un usuario de prueba e ingresar directamente para explorar la plat
 - **Base de datos:** SQLite 
 - **Estilos:** CSS y js
 
- ## ⚡ Instalación rápida ### Backend
-bash
-cd magboost
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+ ## ⚡ Instalación rápida 
+ ### Backend
+- bash
+- cd magboost
+- pip install -r requirements.txt
+- python manage.py migrate
+- python manage.py runserver
 
 ### Frontend
-bash
-cd frontend
-npm install
-npm start
+- bash
+- cd frontend
+- npm install
+- npm start
+  
 ## 📱 Uso 
 1. Servidor Django: http://localhost:8000
 2. App React: http://localhost:3000 3.
