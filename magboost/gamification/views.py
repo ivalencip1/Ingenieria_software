@@ -99,8 +99,12 @@ def completar_mision(request, mision_id):
         
         if not resultado_magneto['exitosa']:
             return Response(resultado_magneto, status=400)
+        
+        # Actualizar puntos del usuario
         usuario.puntos_totales += mision.puntos_recompensa
         usuario.save()
+        
+        # Verificar y otorgar insignias
         nuevas_insignias = verificar_y_otorgar_insignias(usuario)
         
         return Response({

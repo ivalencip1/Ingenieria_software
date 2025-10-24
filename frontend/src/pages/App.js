@@ -12,57 +12,44 @@ import RuletaPage from './RuletaPage';
 import './App.css';
 
 function App() {
-  const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [vistaActual, setVistaActual] = useState('home'); // 'home', 'usuarios', 'misiones', 'tienda', 'perfil', 'ruleta'
+  const [vistaActual, setVistaActual] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
 
   useEffect(() => {
-    const fetchUsuarios = async () => {
+    const cargarUsuario = async () => {
       try {
         setLoading(true);
-        const res = await usuariosAPI.listar();
-        if (Array.isArray(res.data)) {
-          setUsuarios(res.data);
-        } else if (res.data.results && Array.isArray(res.data.results)) {
-          setUsuarios(res.data.results);
-        } else {
-          setUsuarios([]);
+        const usuarioGuardado = localStorage.getItem('usuario');
+        if (usuarioGuardado) {
+          setUsuarioActual(JSON.parse(usuarioGuardado));
         }
       } catch (error) {
-        console.error('Error al obtener usuarios:', error);
+        console.error('Error al cargar usuario:', error);
         setError(error.message);
-        setUsuarios([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUsuarios();
-    // Cargar usuario del demo selector si existe
-    const usuarioDemo = localStorage.getItem('usuario');
-    if (usuarioDemo) {
-      setUsuarioActual(JSON.parse(usuarioDemo));
-    }
+    cargarUsuario();
   }, []);
 
-useEffect(() => {
-  if (usuarioActual && usuarioActual.id) {
-    const actualizarUsuarioActual = async () => {
-      try {
-        const res = await usuariosAPI.detalle(usuarioActual.id);
-        setUsuarioActual(res.data);
-      } catch (error) {
-        // Si falla, mantener el usuario actual
-      }
-    };
-    actualizarUsuarioActual();
-  }
+  useEffect(() => {
+    if (usuarioActual && usuarioActual.id) {
+      const actualizarUsuarioActual = async () => {
+        try {
+          const res = await usuariosAPI.detalle(usuarioActual.id);
+          setUsuarioActual(res.data);
+        } catch (error) {
+          // Si falla, mantener el usuario actual
+        }
+      };
+      actualizarUsuarioActual();
+    }
+  }, [usuarioActual?.id]);
 
-}, [usuarioActual?.id]);
-
-  // Función para cambiar entre vistas
   const cambiarVista = (vista) => {
     setVistaActual(vista);
   };
@@ -79,21 +66,6 @@ useEffect(() => {
           <RetosDia usuarioActual={usuarioActual} />
           <ProgresoSemanal usuarioActual={usuarioActual} />
           <AccesoRapido onCambiarVista={cambiarVista} />
-        </div>
-      )}
-
-      {vistaActual === 'usuarios' && (
-        <div>
-          <h1>Usuarios</h1>
-          {usuarios.length === 0 ? (
-            <p>No hay usuarios registrados</p>
-          ) : (
-            <ul>
-              {usuarios.map((u) => (
-                <li key={u.id}>{u.username} - {u.puntos_totales} puntos</li>
-              ))}
-            </ul>
-          )}
         </div>
       )}
 
@@ -143,7 +115,7 @@ useEffect(() => {
         m
       </div>
 
-      {/* Navegación inferior fija */}
+      {/* Navegación inferior fija - Mejorada */}
       <nav style={{
         position: 'fixed',
         bottom: 0,
@@ -171,32 +143,12 @@ useEffect(() => {
             gap: '4px',
             fontSize: '12px',
             fontWeight: vistaActual === 'home' ? '600' : '400',
-            minWidth: '60px'
+            minWidth: '60px',
+            transition: 'all 0.3s ease'
           }}
         >
           <span style={{fontSize: '20px'}}>🏠</span>
           Home
-        </button>
-        <button 
-          onClick={() => cambiarVista('usuarios')}
-          style={{
-            padding: '8px 12px',
-            background: 'transparent',
-            color: vistaActual === 'usuarios' ? '#667eea' : '#666',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '12px',
-            fontWeight: vistaActual === 'usuarios' ? '600' : '400',
-            minWidth: '60px'
-          }}
-        >
-          <span style={{fontSize: '20px'}}>👥</span>
-          Usuarios
         </button>
         <button 
           onClick={() => cambiarVista('misiones')}
@@ -213,10 +165,11 @@ useEffect(() => {
             gap: '4px',
             fontSize: '12px',
             fontWeight: vistaActual === 'misiones' ? '600' : '400',
-            minWidth: '60px'
+            minWidth: '60px',
+            transition: 'all 0.3s ease'
           }}
         >
-          <span style={{fontSize: '20px'}}>📋</span>
+          <span style={{fontSize: '20px'}}>✅</span>
           Misiones
         </button>
         <button 
@@ -234,7 +187,8 @@ useEffect(() => {
             gap: '4px',
             fontSize: '12px',
             fontWeight: vistaActual === 'tienda' ? '600' : '400',
-            minWidth: '60px'
+            minWidth: '60px',
+            transition: 'all 0.3s ease'
           }}
         >
           <span style={{fontSize: '20px'}}>🛍️</span>
@@ -255,7 +209,8 @@ useEffect(() => {
             gap: '4px',
             fontSize: '12px',
             fontWeight: vistaActual === 'perfil' ? '600' : '400',
-            minWidth: '60px'
+            minWidth: '60px',
+            transition: 'all 0.3s ease'
           }}
         >
           <span style={{fontSize: '20px'}}>👤</span>

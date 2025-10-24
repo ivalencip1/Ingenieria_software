@@ -25,11 +25,7 @@ MAGBOOST ya cuenta con las siguientes funcionalidades:
   
  ## 🚨 IMPORTANTE  
  
-Aunque el **registro e inicio de sesión** aún no fueron priorizados en este sprint, desarrollamos una **simulación temporal**:  
-Puedes elegir un usuario de prueba e ingresar directamente para explorar la plataforma.  
-
-👉 Solo debes correr la app como se explica en la sección de instalación y luego acceder a:  
-`http://localhost:3000/demo_selector.html`
+El **registro e inicio de sesión** están completamente funcionales. Puedes crear una nueva cuenta o usar credenciales existentes para explorar la plataforma.
 
 ---
 

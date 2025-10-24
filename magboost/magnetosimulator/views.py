@@ -13,29 +13,37 @@ def simular_verificacion_tarea():
     return random.choice([True] * 8 + [False] * 2)
 
 def procesar_completar_mision_magneto(usuario, mision):
-
+    """
+    Simula la verificación de una tarea completada en Magneto.
+    80% de probabilidad de éxito, 20% de fallo.
+    """
     verificacion_exitosa = simular_verificacion_tarea()
     
     if not verificacion_exitosa:
         return {
             'exitosa': False,
             'error': 'No se pudo verificar la tarea en la página de Magneto',
-            'mensaje': ' Intenta nuevamente más tarde'
+            'mensaje': 'Intenta nuevamente más tarde'
         }
+    
+    # Crear o actualizar MisionUsuario
     mision_usuario, created = MisionUsuario.objects.get_or_create(
         usuario=usuario,
         mision=mision,
         defaults={'completada': True, 'fecha_completada': timezone.now()}
     )
+    
+    # Si ya existía pero no estaba completada, marcarla como completada
     if not created and not mision_usuario.completada:
         mision_usuario.completada = True
         mision_usuario.fecha_completada = timezone.now()
         mision_usuario.save()
+    
     return {
         'exitosa': True,
         'mision_usuario': mision_usuario,
         'created': created,
-        'mensaje': ' Tarea verificada en Magneto'
+        'mensaje': 'Tarea verificada en Magneto'
     }
 
 @api_view(['POST'])

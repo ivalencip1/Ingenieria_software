@@ -25,11 +25,21 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       const exito = Math.random() < 0.7;
       if (exito) {
         fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
-          method: 'POST'
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            usuario_id: usuarioActual?.id
+          })
         })
         .then(res => res.json())
         .then(data => {
           setCargando(false);
+          if (data.error) {
+            alert(`❌ Error: ${data.error}`);
+            return;
+          }
           alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
           window.location.reload();
         })
@@ -43,6 +53,13 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
         alert(`❌ ¡Reto no completado! Los sensores magnéticos no detectaron actividad suficiente. ¡Inténtalo de nuevo!`);
       }
     }, 4000);
+  };
+
+  const iniciarCargaMision = (misionId) => {
+    setCargando(true);
+    setTimeout(() => {
+      completarMision(misionId);
+    }, 2000);
   };
 
   // Popup previo para Amigos por siempre

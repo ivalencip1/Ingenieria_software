@@ -22,7 +22,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 # Importa los ViewSets de cada app
-from core.views import PerfilUsuarioViewSet, perfil_usuario
+from core.views import PerfilUsuarioViewSet, perfil_usuario, login_usuario, signup_usuario, save_survey
 
 # from gamification.views import PuntoViewSet, InsigniaViewSet, MisionViewSet, RankingViewSet
 # from rewards.views import RecompensaViewSet, TiendaViewSet, MentoriaViewSet, RuletaViewSet
@@ -84,6 +84,9 @@ urlpatterns = [
     path('', api_root, name='api-root'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/auth/login/', login_usuario, name='login'),
+    path('api/auth/signup/', signup_usuario, name='signup'),
+    path('api/auth/survey/', save_survey, name='save-survey'),
     path('api/core/', include('core.urls')),
     path('api/gamification/', include('gamification.urls')),
     path('api/rewards/', include('rewards.urls')),
