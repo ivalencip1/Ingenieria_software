@@ -90,6 +90,7 @@ urlpatterns = [
     path('api/core/', include('core.urls')),
     path('api/gamification/', include('gamification.urls')),
     path('api/rewards/', include('rewards.urls')),
+    path('api/social/', include('social.urls')),
     path('api/magnetosimulator/', include('magnetosimulator.urls')),
 ]
 

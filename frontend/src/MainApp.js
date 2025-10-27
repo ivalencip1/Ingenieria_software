@@ -118,11 +118,7 @@ function MainApp() {
           path="/dashboard"
           element={
             isAuthenticated ? (
-              !surveyCompleted ? (
-                <Navigate to="/onboarding-survey" replace />
-              ) : (
-                <App />
-              )
+              <App />
             ) : (
               <Navigate to="/login" replace />
             )

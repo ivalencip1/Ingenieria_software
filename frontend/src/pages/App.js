@@ -9,6 +9,7 @@ import MisionesPage from './MisionesPage';
 import TiendaRecompensas from './TiendaRecompensas';
 import Perfil from './Perfil';
 import RuletaPage from './RuletaPage';
+import RankingPage from './RankingPage';
 import './App.css';
 
 function App() {
@@ -87,6 +88,10 @@ function App() {
 
       {vistaActual === 'ruleta' && (
         <RuletaPage usuarioActual={usuarioActual} />
+      )}
+
+      {vistaActual === 'ranking' && (
+        <RankingPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {/* Botón flotante Magneto - Global */}
@@ -194,6 +199,7 @@ function App() {
           <span style={{fontSize: '20px'}}>🛍️</span>
           Tienda
         </button>
+        {/* Ranking button removed from bottom nav; access via AccesoRapido */}
         <button 
           onClick={() => cambiarVista('perfil')}
           style={{

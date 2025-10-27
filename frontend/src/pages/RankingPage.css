@@ -1,0 +1,272 @@
+.ranking-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 20px;
+}
+
+.ranking-header {
+  background: white;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.ranking-back-btn {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.ranking-back-btn:hover {
+  background: #f0f0f0;
+}
+
+.ranking-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  text-align: center;
+}
+
+.ranking-loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* Podio Top 3 */
+.ranking-podio {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 30px 20px;
+  background: white;
+  margin: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.podio-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.podio-card:hover {
+  transform: translateY(-5px);
+}
+
+.podio-primero {
+  border-color: #FFD700;
+  min-height: 200px;
+  order: 2;
+  flex: 1;
+  max-width: 150px;
+}
+
+.podio-segundo {
+  min-height: 170px;
+  order: 1;
+  flex: 1;
+  max-width: 140px;
+}
+
+.podio-tercero {
+  min-height: 150px;
+  order: 3;
+  flex: 1;
+  max-width: 140px;
+}
+
+.podio-corona {
+  font-size: 32px;
+  position: absolute;
+  top: -20px;
+}
+
+.podio-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.podio-nombre {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.podio-puntos {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ef983a;
+  margin-bottom: 8px;
+}
+
+.podio-categoria {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+}
+
+/* Lista general */
+.ranking-lista {
+  background: white;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ranking-subtitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.ranking-item:hover {
+  background: #f0f0f0;
+  transform: translateX(5px);
+}
+
+.ranking-item-actual {
+  background: #fff3e0;
+  border: 2px solid #ef983a;
+}
+
+.ranking-posicion {
+  font-size: 16px;
+  font-weight: bold;
+  color: #666;
+  min-width: 40px;
+  text-align: center;
+}
+
+.ranking-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ranking-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ranking-nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.ranking-categoria-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+  color: white;
+  width: fit-content;
+}
+
+.ranking-puntos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ranking-puntos-numero {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ef983a;
+}
+
+.ranking-puntos-label {
+  font-size: 11px;
+  color: #999;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .ranking-podio {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .podio-primero,
+  .podio-segundo,
+  .podio-tercero {
+    order: 0;
+    min-height: auto;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .ranking-item {
+    gap: 10px;
+  }
+
+  .ranking-posicion {
+    min-width: 30px;
+    font-size: 14px;
+  }
+
+  .ranking-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
