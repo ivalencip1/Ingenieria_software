@@ -25,8 +25,6 @@ function UserHeader({ usuarioActual }) {
         </p>
       </div>
       <div style={{display: "flex", alignItems: "center", gap: "15px"}}>
-        {usuario?.id && <NotificacionesBell usuarioId={usuario.id} />}
-        
         <div style={{
           background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)",
           padding: "8px 15px",
@@ -74,6 +72,7 @@ function UserHeader({ usuarioActual }) {
             
           </div>
         </div>
+        {usuario?.id && <NotificacionesBell usuarioId={usuario.id} />}
       </div>
     </header>
   );

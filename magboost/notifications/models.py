@@ -7,6 +7,7 @@ class Notificacion(models.Model):
 		("sistema", "Sistema"),
 		("bienvenida", "Bienvenida"),
 		("mision_pendiente", "Misión pendiente"),
+		("misiones_completadas", "Misiones completadas"),
 		("recordatorio", "Recordatorio"),
 	)
 
