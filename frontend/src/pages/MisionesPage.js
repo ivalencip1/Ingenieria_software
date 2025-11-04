@@ -19,6 +19,20 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       .catch(err => console.error(err));
   }, [usuarioActual]);
 
+  // Al entrar a Misiones, solicitar tips (no incluye la BIO; BIO solo se crea al volver de Perfil)
+  useEffect(() => {
+    if (!usuarioActual?.id) return;
+    fetch(`http://localhost:8000/api/notifications/usuario/${usuarioActual.id}/tips-perfil/?trigger=misiones_enter`, { method: 'POST' })
+      .then(() => {
+        // Avisar a la campana para que recargue el badge/lista
+        if (typeof window !== 'undefined') {
+          const ev = new CustomEvent('magboost:new-notifications');
+          window.dispatchEvent(ev);
+        }
+      })
+      .catch(() => {});
+  }, [usuarioActual]);
+
   const completarMision = (misionId) => {
     setCargando(true);
     setTimeout(() => {

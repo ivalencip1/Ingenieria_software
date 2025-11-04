@@ -8,6 +8,7 @@ class Notificacion(models.Model):
 		("bienvenida", "Bienvenida"),
 		("mision_pendiente", "Misión pendiente"),
 		("misiones_completadas", "Misiones completadas"),
+		("tip_perfil", "Tip de perfil"),
 		("recordatorio", "Recordatorio"),
 	)
 

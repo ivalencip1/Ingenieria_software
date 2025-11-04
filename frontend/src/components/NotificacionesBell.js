@@ -20,7 +20,13 @@ export default function NotificacionesBell({ usuarioId }) {
 
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("click", onDoc);
-    return () => document.removeEventListener("click", onDoc);
+    // Escuchar eventos globales para refrescar desde otras páginas (p.ej., Misiones)
+    const onRefresh = () => cargar();
+    window.addEventListener('magboost:new-notifications', onRefresh);
+    return () => {
+      document.removeEventListener("click", onDoc);
+      window.removeEventListener('magboost:new-notifications', onRefresh);
+    };
   }, [usuarioId]);
 
   async function cargar(){
@@ -95,13 +101,31 @@ export default function NotificacionesBell({ usuarioId }) {
             {list.filter(n=>!n.leida).length===0 ? (
               <div style={{ padding:16, color:"#555" }}>No tienes notificaciones</div>
             ) : (
-              // Mostrar solo las no leídas (máximo 5)
-              list.filter(n=>!n.leida).slice(0,5).map(n=> (
-                <button key={n.id} onClick={()=>marcarUna(n)} style={{ width:"100%", textAlign:"left", background:"transparent", border:"none", cursor:"pointer", padding:"10px 8px", borderBottom:"1px solid #eee" }}>
-                  <div style={{ fontWeight:600, marginBottom:4 }}>{n.icono || ""} {n.titulo}</div>
-                  <div style={{ fontSize:13, color:"#444" }}>{n.mensaje}</div>
-                </button>
-              ))
+              // Mostrar solo las no leídas (máximo 5). Destacar 'tip_perfil'.
+              list.filter(n=>!n.leida).slice(0,5).map(n=> {
+                const isTip = n.tipo === 'tip_perfil';
+                return (
+                  <button
+                    key={n.id}
+                    onClick={()=>marcarUna(n)}
+                    style={{
+                      width:"100%",
+                      textAlign:"left",
+                      background: isTip ? "#fff7d6" : "transparent",
+                      border:"none",
+                      cursor:"pointer",
+                      padding:"10px 8px",
+                      borderBottom:"1px solid #eee",
+                      borderLeft: isTip ? "4px solid #f59e0b" : "4px solid transparent"
+                    }}
+                  >
+                    <div style={{ fontWeight:700, marginBottom:4, color: isTip ? "#8a4b00" : undefined }}>
+                      {n.icono || ""} {n.titulo}
+                    </div>
+                    <div style={{ fontSize:13, color: isTip ? "#6b4e16" : "#444" }}>{n.mensaje}</div>
+                  </button>
+                );
+              })
             )}
             {list.filter(n=>!n.leida).length>5 && (
               <div style={{ padding:8, textAlign:"center", color:"#666", fontSize:12 }}>Hay más notificaciones...</div>

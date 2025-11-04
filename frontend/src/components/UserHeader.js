@@ -42,20 +42,23 @@ function UserHeader({ usuarioActual }) {
           width: "50px",
           height: "50px",
           borderRadius: "50%",
-          background: "#ddd",
+          background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           fontSize: "24px",
-          overflow: "hidden"
+          overflow: "hidden",
+          color: "#fff",
+          fontWeight: 700,
+          letterSpacing: 0.5
         }}>
           {usuario?.avatar ? (
             <img 
-              src={`http://localhost:8000/media/${usuario.avatar.replace("avatars/", "")}`}
+              src={`http://localhost:8000/media/${usuario.avatar}`}
               alt="Avatar"
               onError={(e) => {
                 e.target.style.display = "none";
-                e.target.nextSibling.style.display = "block";
+                e.target.nextSibling.style.display = "flex";
               }}
               style={{
                 width: "100%",
@@ -65,11 +68,14 @@ function UserHeader({ usuarioActual }) {
             />
           ) : null}
           <div style={{
-            display: usuario?.avatar ? "none" : "block",
-            color: "white",
-            fontSize: "24px"
+            display: usuario?.avatar ? "none" : "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%"
           }}>
-            
+            {(usuario?.first_name?.[0] || usuario?.username?.[0] || "").toUpperCase()}
+            {(usuario?.last_name?.[0] || "").toUpperCase()}
           </div>
         </div>
         {usuario?.id && <NotificacionesBell usuarioId={usuario.id} />}

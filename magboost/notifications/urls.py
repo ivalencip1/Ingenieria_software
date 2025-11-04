@@ -6,5 +6,6 @@ urlpatterns = [
     path('usuario/<int:usuario_id>/marcar-todas-leidas/', views.marcar_todas_leidas, name='notifications-marcar-todas'),
     path('usuario/<int:usuario_id>/bienvenida/', views.bienvenida, name='notifications-bienvenida'),
     path('usuario/<int:usuario_id>/verificar-misiones/', views.verificar_misiones, name='notifications-verificar-misiones'),
+    path('usuario/<int:usuario_id>/tips-perfil/', views.tips_perfil, name='notifications-tips-perfil'),
     path('notificacion/<int:notificacion_id>/marcar-leida/', views.marcar_leida, name='notifications-marcar-leida'),
 ]

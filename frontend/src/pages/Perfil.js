@@ -11,6 +11,9 @@ const Perfil = ({ onVolver, usuarioActual }) => {
   const [insigniaSeleccionada, setInsigniaSeleccionada] = useState(null);
 
   useEffect(() => {
+    // Marcar que el usuario visitó la pantalla de Perfil
+    try { localStorage.setItem('magboost_profile_visited', '1'); } catch(_) {}
+
     const fetchPerfilCompleto = async () => {
       try {
         const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
@@ -70,6 +73,15 @@ const Perfil = ({ onVolver, usuarioActual }) => {
   }
 
   const { perfil, estadisticas, insignias_obtenidas, total_insignias,  biografia } = perfilData;
+
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('magboost_profile_visited');
+    } catch (_) {}
+    // Redirigir a la página principal (o login si tu servidor la sirve)
+    window.location.href = '/';
+  };
 
   return (
     <div className="perfil-container">
@@ -207,6 +219,30 @@ const Perfil = ({ onVolver, usuarioActual }) => {
           </div>
         </div>
       )}
+
+      {/* Sección para cerrar sesión */}
+      <div style={{ marginTop: '28px' }}>
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%',
+            background: '#fff',
+            color: '#ef4444',
+            border: '2px solid #ef4444',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 2px 0 rgba(239,68,68,0.15)',
+            letterSpacing: 0.2,
+            boxSizing: 'border-box',
+            textAlign: 'center'
+          }}
+          aria-label="Cerrar sesión"
+        >
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   );
 };

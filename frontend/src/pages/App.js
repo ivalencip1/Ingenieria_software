@@ -17,6 +17,7 @@ function App() {
   const [error, setError] = useState(null);
   const [vistaActual, setVistaActual] = useState('home');
   const [usuarioActual, setUsuarioActual] = useState(null);
+  const [prevVista, setPrevVista] = useState('home');
 
   useEffect(() => {
     const cargarUsuario = async () => {
@@ -52,8 +53,27 @@ function App() {
   }, [usuarioActual?.id]);
 
   const cambiarVista = (vista) => {
+    setPrevVista(vistaActual);
     setVistaActual(vista);
   };
+
+  // Al volver a Home después de visitar Perfil, disparar tip BIO
+  useEffect(() => {
+    if (vistaActual !== 'home') return;
+    if (!usuarioActual?.id) return;
+    let shouldTrigger = false;
+    try { shouldTrigger = localStorage.getItem('magboost_profile_visited') === '1'; } catch(_) {}
+    if (!shouldTrigger) return;
+    fetch(`http://localhost:8000/api/notifications/usuario/${usuarioActual.id}/tips-perfil/?trigger=profile_return`, { method: 'POST' })
+      .then(() => {
+        try { localStorage.removeItem('magboost_profile_visited'); } catch(_) {}
+        if (typeof window !== 'undefined') {
+          const ev = new CustomEvent('magboost:new-notifications');
+          window.dispatchEvent(ev);
+        }
+      })
+      .catch(() => {});
+  }, [vistaActual, usuarioActual?.id]);
 
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>Error: {error}</div>;

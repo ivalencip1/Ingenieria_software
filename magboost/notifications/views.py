@@ -6,6 +6,7 @@ from django.utils import timezone
 from datetime import timedelta
 
 from .models import Notificacion
+from core.models import PerfilUsuario
 from gamification.models import Mision, MisionUsuario
 
 
@@ -23,11 +24,29 @@ def _serialize(n: Notificacion):
 
 def listar_notificaciones(request, usuario_id: int):
 	user = get_object_or_404(get_user_model(), pk=usuario_id)
-	qs = Notificacion.objects.filter(usuario=user).order_by("-fecha_creacion")[:50]
-	no_leidas = Notificacion.objects.filter(usuario=user, leida=False).count()
+	qs = list(Notificacion.objects.filter(usuario=user).order_by("-fecha_creacion")[:100])
+
+	# Deduplicar por (tipo, titulo): mantener la más reciente y marcar otras como leídas para limpiar
+	seen = set()
+	dedup = []
+	to_mark_read = []
+	for n in qs:
+		key = (n.tipo, n.titulo)
+		if key in seen:
+			if not n.leida:
+				to_mark_read.append(n.id)
+			continue
+		seen.add(key)
+		dedup.append(n)
+
+	if to_mark_read:
+		Notificacion.objects.filter(id__in=to_mark_read, leida=False).update(leida=True)
+
+	no_leidas = sum(1 for n in dedup if not n.leida)
+
 	return JsonResponse({
 		"ok": True,
-		"notificaciones": [_serialize(n) for n in qs],
+		"notificaciones": [_serialize(n) for n in dedup[:50]],
 		"no_leidas": no_leidas,
 	})
 
@@ -57,16 +76,17 @@ def bienvenida(request, usuario_id: int):
 	if request.method != "POST":
 		return JsonResponse({"ok": False, "error": "POST required"}, status=405)
 	user = get_object_or_404(get_user_model(), pk=usuario_id)
-	cutoff = timezone.now() - timedelta(hours=6)
-	exists = Notificacion.objects.filter(usuario=user, tipo="bienvenida", fecha_creacion__gte=cutoff).exists()
-	if not exists:
-		Notificacion.objects.create(
-			usuario=user,
-			titulo="¡Bienvenido a MagBoost!",
-			mensaje="Nos alegra verte por aquí.",
-			tipo="bienvenida",
-			icono="",
-		)
+	# Evita duplicados concurrentes: solo 1 bienvenida sin leer a la vez
+	Notificacion.objects.get_or_create(
+		usuario=user,
+		tipo="bienvenida",
+		leida=False,
+		defaults={
+			"titulo": "¡Bienvenido a MagBoost!",
+			"mensaje": "Nos alegra verte por aquí.",
+			"icono": "",
+		}
+	)
 	return JsonResponse({"ok": True})
 
 
@@ -91,37 +111,92 @@ def verificar_misiones(request, usuario_id: int):
 	hay_pendientes = pendientes.exists()
 
 	if hay_pendientes:
-		# Generar recordatorio de pendientes si no existe uno reciente sin leer
-		existe_recordatorio = Notificacion.objects.filter(
+		# Solo 1 recordatorio sin leer a la vez. Si ya existe sin leer, no crear otro.
+		Notificacion.objects.get_or_create(
 			usuario=user,
 			tipo="mision_pendiente",
 			leida=False,
-			fecha_creacion__gte=cutoff,
-		).exists()
-		if not existe_recordatorio:
-			Notificacion.objects.create(
-				usuario=user,
-				titulo="Tienes misiones pendientes",
-				mensaje="Completa tus misiones activas para ganar puntos e insignias.",
-				tipo="mision_pendiente",
-				icono="",
-			)
+			defaults={
+				"titulo": "Tienes misiones pendientes",
+				"mensaje": "Completa tus misiones activas para ganar puntos e insignias.",
+				"icono": "",
+			}
+		)
 	else:
-		# Todas completadas: notificación positiva si no existe una reciente sin leer
-		existe_completadas = Notificacion.objects.filter(
+		# Solo 1 notificación 'completadas' sin leer a la vez.
+		Notificacion.objects.get_or_create(
 			usuario=user,
 			tipo="misiones_completadas",
 			leida=False,
-			fecha_creacion__gte=cutoff,
-		).exists()
-		if not existe_completadas:
-			Notificacion.objects.create(
-				usuario=user,
-				titulo="¡Misiones completadas!",
-				mensaje="Has completado todas tus misiones activas. ¡Excelente trabajo!",
-				tipo="misiones_completadas",
-				icono="",
-			)
+			defaults={
+				"titulo": "¡Misiones completadas!",
+				"mensaje": "Has completado todas tus misiones activas. ¡Excelente trabajo!",
+				"icono": "",
+			}
+		)
 
 	return JsonResponse({"ok": True, "pendientes": hay_pendientes})
+
+
+@csrf_exempt
+def tips_perfil(request, usuario_id: int):
+	if request.method != "POST":
+		return JsonResponse({"ok": False, "error": "POST required"}, status=405)
+
+	user = get_object_or_404(get_user_model(), pk=usuario_id)
+	# Candidatos de tips personalizados en base a su perfil
+	# Algunos tips dependen del contexto (trigger). Por ejemplo,
+	# el tip de BIO solo debe mostrarse cuando el usuario vuelve del Perfil a Home.
+	trigger = request.GET.get("trigger") or (request.POST.dict().get("trigger") if hasattr(request, "POST") else None)
+	allow_bio_tip = (trigger == "profile_return")
+	tips = []
+	try:
+		perfil: PerfilUsuario = get_object_or_404(get_user_model(), pk=usuario_id)
+	except Exception:
+		perfil = user  # Fallback: el user es PerfilUsuario
+
+	# Heurísticas simples
+	if allow_bio_tip and (not getattr(perfil, 'bio', None) or len(getattr(perfil, 'bio', '') or '') < 30):
+		tips.append({
+			"titulo": "Mejora tu biografía en Magneto",
+			"mensaje": "Una biografía clara y concreta aumenta tus oportunidades. Añade logros, habilidades clave y tu objetivo profesional.",
+		})
+
+	stage = getattr(perfil, 'professional_stage', None)
+	if stage in ("seeking", "learning"):
+		tips.append({
+			"titulo": "Explora cursos para impulsar tu perfil",
+			"mensaje": "Revisa cursos relevantes y añade certificaciones para destacar en las búsquedas.",
+		})
+
+	if stage == "seeking":
+		tips.append({
+			"titulo": "Ajusta tu enfoque de búsqueda",
+			"mensaje": "Define con claridad el tipo de rol y sector que buscas para mejorar la coincidencia con vacantes.",
+		})
+
+	# Si no hay heurísticas aplicables, genera al menos un tip genérico
+	if not tips:
+		tips.append({
+			"titulo": "Consejo rápido para tu perfil",
+			"mensaje": "Actualiza tu perfil con tus últimos logros y habilidades para mejorar tu visibilidad.",
+		})
+
+	# Evitar duplicados concurrentes: solo una notificación 'tip_perfil' por título sin leer
+	creadas = 0
+	for tip in tips:
+		_, created = Notificacion.objects.get_or_create(
+			usuario=user,
+			tipo="tip_perfil",
+			titulo=tip["titulo"],
+			leida=False,
+			defaults={
+				"mensaje": tip["mensaje"],
+				"icono": "",
+			}
+		)
+		if created:
+			creadas += 1
+
+	return JsonResponse({"ok": True, "creadas": creadas})
 

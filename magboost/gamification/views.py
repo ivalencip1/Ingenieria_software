@@ -58,21 +58,30 @@ def misiones_completadas(request):
     
     if not usuario:
         return Response({'error': 'Usuario no encontrado'}, status=404)
-    misiones_completadas = MisionUsuario.objects.filter(
-        usuario=usuario, 
-        completada=True
-    ).select_related('mision').values(
-        'id',
-        'fecha_completada',
-        'mision__id',
-        'mision__nombre',
-        'mision__descripcion',
-        'mision__puntos',
-        'mision__icono',
-        'mision__tipo'
-    ).order_by('-fecha_completada')
-    
-    return Response(list(misiones_completadas))
+    # Responder con claves compatibles con Perfil.js actual (alias a los nombres del modelo)
+    registros = (
+        MisionUsuario.objects
+        .filter(usuario=usuario, completada=True)
+        .select_related('mision')
+        .order_by('-fecha_completada')
+    )
+
+    data = []
+    for mu in registros:
+        m = mu.mision
+        data.append({
+            'id': mu.id,
+            'fecha_completada': mu.fecha_completada,
+            'mision__id': m.id,
+            # Alias esperados por el frontend actual
+            'mision__nombre': getattr(m, 'titulo', ''),
+            'mision__descripcion': getattr(m, 'descripcion', ''),
+            'mision__puntos': getattr(m, 'puntos_recompensa', 0),
+            'mision__icono': getattr(m, 'icono', ''),
+            'mision__tipo': getattr(m, 'tipo', ''),
+        })
+
+    return Response(data)
 
 
 @api_view(['POST'])
