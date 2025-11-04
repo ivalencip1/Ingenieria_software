@@ -238,7 +238,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
             boxSizing: 'border-box',
             textAlign: 'center'
           }}
-          aria-label="Cerrar sesión"
+          aria-label="Cerrar sesión en la pag"
         >
           Cerrar sesión
         </button>
