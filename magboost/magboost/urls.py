@@ -45,6 +45,7 @@ def api_root(request):
             'ruleta': '/api/rewards/ruleta/',
             'ranking': '/api/rewards/ranking/',
             'magnetosimulator': '/api/magnetosimulator/',
+            'notifications': '/api/notifications/',
         }
     })
 
@@ -92,6 +93,7 @@ urlpatterns = [
     path('api/rewards/', include('rewards.urls')),
     path('api/social/', include('social.urls')),
     path('api/magnetosimulator/', include('magnetosimulator.urls')),
+    path('api/notifications/', include('notifications.urls')),
 ]
 
 # Servir archivos media en desarrollo
