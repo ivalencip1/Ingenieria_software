@@ -62,16 +62,6 @@ router.register(r'usuarios', PerfilUsuarioViewSet)
 # router.register(r'misiones', MisionViewSet)
 # router.register(r'ranking', RankingViewSet)
 
-# Rewards
-# router.register(r'recompensas', RecompensaViewSet)
-# router.register(r'tienda', TiendaViewSet)
-# router.register(r'mentorias', MentoriaViewSet)
-# router.register(r'ruleta', RuletaViewSet)
-
-# Social
-# router.register(r'invitaciones', InvitacionViewSet)
-# router.register(r'ofertas', CompartirOfertaViewSet)
-
 # Notifications
 # router.register(r'notificaciones', NotificacionViewSet)
 # router.register(r'tips', TipViewSet)
