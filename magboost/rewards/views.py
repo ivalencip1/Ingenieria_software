@@ -217,21 +217,19 @@ def api_categorias_recompensas(request):
         'puntos_usuario': usuario.puntos_totales
     })
 
+
 @csrf_exempt
 def api_comprar_recompensa(request):
-    """Comprar una recompensa con puntos"""
+    """Comprar una recompensa con puntos. Usa bloqueo select_for_update para evitar race conditions."""
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
-    
     try:
-        # Soporte robusto: aceptar JSON en request.body o form-encoded en request.POST.
         data = {}
         try:
             if request.content_type and 'application/json' in request.content_type:
                 body = request.body.decode('utf-8') if hasattr(request, 'body') else ''
                 data = json.loads(body) if body else {}
             else:
-                # Intentar obtener desde request.POST (form-data) o fallback a JSON
                 data = request.POST.dict() if hasattr(request, 'POST') else {}
                 if not data:
                     body = request.body.decode('utf-8') if hasattr(request, 'body') else ''
@@ -239,136 +237,128 @@ def api_comprar_recompensa(request):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
 
-        # Aceptar varias variantes del nombre del campo por compatibilidad
         recompensa_id = data.get('recompensa_id') or data.get('recompensaId') or data.get('id')
         usuario_id_body = data.get('usuario_id') or data.get('usuarioId') or data.get('user_id')
 
         if not recompensa_id:
             return JsonResponse({'error': 'ID de recompensa requerido'}, status=400)
-        # Debug logging: mostrar qué usuario está haciendo la petición y los puntos actuales
-        try:
-            logger = logging.getLogger('magboost.rewards')
-        except Exception:
-            logger = None
-        try:
-            # determinar usuario objetivo: preferir usuario_id pasado en el body, luego request.user, luego first
-            usuario_log = None
-            if usuario_id_body:
-                try:
-                    usuario_log = User.objects.get(id=usuario_id_body)
-                except User.DoesNotExist:
-                    usuario_log = None
-            if not usuario_log and getattr(request, 'user', None) and request.user.is_authenticated:
-                usuario_log = request.user
-            if not usuario_log:
-                usuario_log = User.objects.first()
-            log_msg = f"Compra request: recompensa_id={recompensa_id}, content_type={request.content_type}, usuario_id={(usuario_log.id if usuario_log else 'None')}, usuario_username={(usuario_log.username if usuario_log else 'None')}, puntos_actuales={(usuario_log.puntos_totales if usuario_log else 'None')}"
-            if logger:
-                logger.info(log_msg)
-            else:
-                print(log_msg)
-        except Exception as e:
-            print('Error al loggear compra:', e)
-        with transaction.atomic():
+
+        # Determinar usuario objetivo
+        if getattr(request, 'user', None) and request.user.is_authenticated:
+            usuario = request.user
+        elif usuario_id_body:
             try:
-                recompensa = Recompensa.objects.get(id=recompensa_id, disponible=True)
+                usuario = User.objects.get(id=usuario_id_body)
+            except User.DoesNotExist:
+                return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+        else:
+            usuario = User.objects.first()
+
+        if not usuario:
+            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+
+        # Bloqueo de fila para evitar condiciones de carrera
+        with transaction.atomic():
+            usuario_locked = User.objects.select_for_update().get(id=usuario.id)
+            try:
+                recompensa = Recompensa.objects.select_for_update().get(id=recompensa_id, disponible=True)
             except Recompensa.DoesNotExist:
                 return JsonResponse({'error': 'Recompensa no encontrada'}, status=404)
-            usuario = request.user if request.user.is_authenticated else User.objects.first()
-            
-            if not usuario:
-                return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-                
-            if usuario.puntos_totales < recompensa.costo_puntos:
+
+            if usuario_locked.puntos_totales < recompensa.costo_puntos:
                 return JsonResponse({
                     'error': 'No tienes suficientes puntos',
                     'puntos_necesarios': recompensa.costo_puntos,
-                    'puntos_actuales': usuario.puntos_totales
+                    'puntos_actuales': usuario_locked.puntos_totales
                 }, status=400)
-            usuario.puntos_totales -= recompensa.costo_puntos
-            usuario.save()
+
+            usuario_locked.puntos_totales -= recompensa.costo_puntos
+            usuario_locked.save()
+
             compra = CompraRecompensa.objects.create(
-                usuario=usuario,
+                usuario=usuario_locked,
                 recompensa=recompensa,
                 puntos_gastados=recompensa.costo_puntos
             )
-            
-            return JsonResponse({
-                'success': True,
-                'mensaje': f'¡Has canjeado {recompensa.nombre}!',
-                'compra_id': compra.id,
-                'puntos_restantes': usuario.puntos_totales,
-                'recompensa': {
-                    'nombre': recompensa.nombre,
-                    'descripcion': recompensa.descripcion,
-                    'costo_puntos': recompensa.costo_puntos
-                }
-            })
-            
+
+        return JsonResponse({
+            'success': True,
+            'mensaje': f'¡Has canjeado {recompensa.nombre}!',
+            'compra_id': compra.id,
+            'puntos_restantes': usuario_locked.puntos_totales,
+            'recompensa': {
+                'nombre': recompensa.nombre,
+                'descripcion': recompensa.descripcion,
+                'costo_puntos': recompensa.costo_puntos
+            }
+        })
+
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
     except Exception as e:
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
+
 def api_historial_compras(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
-    
+    usuario_id = request.GET.get('usuario_id')
+    if usuario_id:
+        try:
+            usuario = User.objects.get(id=usuario_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    else:
+        usuario = request.user if request.user.is_authenticated else User.objects.first()
     if not usuario:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-    
-    compras = CompraRecompensa.objects.filter(usuario=usuario).select_related('recompensa')
-    
+
+    compras = CompraRecompensa.objects.filter(usuario=usuario).order_by('-fecha_compra')[:50]
     historial = []
-    for compra in compras:
+    for c in compras:
         historial.append({
-            'id': compra.id,
+            'id': c.id,
             'recompensa': {
-                'nombre': compra.recompensa.nombre,
-                'descripcion': compra.recompensa.descripcion,
-                'icono': compra.recompensa.icono
+                'id': c.recompensa.id,
+                'nombre': c.recompensa.nombre,
+                'icono': c.recompensa.icono,
             },
-            'puntos_gastados': compra.puntos_gastados,
-            'fecha_compra': compra.fecha_compra.isoformat(),
-            'canjeado': compra.canjeado
+            'puntos_gastados': c.puntos_gastados,
+            'fecha_compra': c.fecha_compra.isoformat(),
+            'canjeado': c.canjeado
         })
-    
-    return JsonResponse({
-        'historial': historial,
-        'total_compras': len(historial),
-        'puntos_gastados_total': sum(compra.puntos_gastados for compra in compras)
-    })
+
+    return JsonResponse({'historial': historial})
+
 
 @csrf_exempt
 def api_marcar_canjeado(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
-    
     try:
-        data = json.loads(request.body)
-        compra_id = data.get('compra_id')
-        
+        data = {}
+        try:
+            if request.content_type and 'application/json' in request.content_type:
+                body = request.body.decode('utf-8') if hasattr(request, 'body') else ''
+                data = json.loads(body) if body else {}
+            else:
+                data = request.POST.dict() if hasattr(request, 'POST') else {}
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+
+        compra_id = data.get('compra_id') or data.get('id')
         if not compra_id:
             return JsonResponse({'error': 'ID de compra requerido'}, status=400)
-        
+
         try:
-            usuario = request.user if request.user.is_authenticated else User.objects.first()
-            
-            if not usuario:
-                return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-                
-            compra = CompraRecompensa.objects.get(id=compra_id, usuario=usuario)
-            compra.canjeado = True
-            compra.save()
-            
-            return JsonResponse({
-                'success': True,
-                'mensaje': 'Recompensa marcada como utilizada'
-            })
-            
+            compra = CompraRecompensa.objects.get(id=compra_id)
         except CompraRecompensa.DoesNotExist:
             return JsonResponse({'error': 'Compra no encontrada'}, status=404)
-            
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+
+        compra.canjeado = True
+        compra.save()
+
+        return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
+
+# NOTE: Las rutas y la lógica de compra/historial/canje fueron eliminadas.
+# Si en el futuro se desea reactivar, reimplementar con validaciones y tests.

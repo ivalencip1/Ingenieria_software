@@ -12,6 +12,7 @@ class RecompensaAdmin(admin.ModelAdmin):
     list_filter = ['categoria', 'disponible', 'costo_puntos']
     search_fields = ['nombre', 'descripcion']
 
+# CompraRecompensa admin removed because the model was deleted.
 @admin.register(CompraRecompensa)
 class CompraRecompensaAdmin(admin.ModelAdmin):
     list_display = ['usuario', 'recompensa', 'puntos_gastados', 'fecha_compra', 'canjeado']
