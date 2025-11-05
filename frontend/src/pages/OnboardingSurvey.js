@@ -14,6 +14,8 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
     professional_stage: '',
     challenge_types: [],
     motivating_topics: [],
+    // sectores de interes añadidos
+    sectors: [],
     main_motivation: '',
     frequency: '',
     notification_method: ''
@@ -31,7 +33,7 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
       questions: [
         {
           id: 'connection_level',
-          label: '¿Cuál es tu nivel de conexión con la gamificación?',
+          label: '¿Cuál es tu nivel de conexión con paginas para encontrar empleo?',
           type: 'radio',
           options: [
             { value: 'starting', label: 'Estoy comenzando', icon: Zap },
@@ -77,6 +79,19 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
             { value: 'sustainability', label: 'Sostenibilidad', icon: Globe },
             { value: 'social_impact', label: 'Impacto social', icon: Heart },
             { value: 'health', label: 'Salud y bienestar', icon: Heart }
+          ]
+        }
+        ,
+        {
+          id: 'sectors',
+          label: 'Sectores que te interesan (selecciona varios):',
+          type: 'checkbox',
+          options: [
+            { value: 'tech', label: 'Tecnología' },
+            { value: 'health', label: 'Salud' },
+            { value: 'education', label: 'Educación' },
+            { value: 'finance', label: 'Finanzas' },
+            { value: 'retail', label: 'Retail' }
           ]
         }
       ]

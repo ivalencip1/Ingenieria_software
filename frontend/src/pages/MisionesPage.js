@@ -8,8 +8,10 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     retos_mensuales: []
   });
   const [cargando, setCargando] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [mostrarPopup, setMostrarPopup] = useState(false);
   const [misionPendiente, setMisionPendiente] = useState(null);
+
 
   useEffect(() => {
     const params = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
@@ -19,94 +21,159 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       .catch(err => console.error(err));
   }, [usuarioActual]);
 
-  // Al entrar a Misiones, solicitar tips (no incluye la BIO; BIO solo se crea al volver de Perfil)
+
   useEffect(() => {
     if (!usuarioActual?.id) return;
     fetch(`http://localhost:8000/api/notifications/usuario/${usuarioActual.id}/tips-perfil/?trigger=misiones_enter`, { method: 'POST' })
       .then(() => {
         // Avisar a la campana para que recargue el badge/lista
-        if (typeof window !== 'undefined') {
-          const ev = new CustomEvent('magboost:new-notifications');
-          window.dispatchEvent(ev);
-        }
+        const ev = new CustomEvent('magboost:new-notifications');
+        window.dispatchEvent(ev);
       })
       .catch(() => {});
   }, [usuarioActual]);
 
   const completarMision = (misionId) => {
+    // por defecto intentamos completar la misión llamando al backend
+    // para la misión especial "Amigos por siempre" skipearemos la falla aleatoria
     setCargando(true);
     setTimeout(() => {
-      const exito = Math.random() < 0.7;
-      if (exito) {
-        fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            usuario_id: usuarioActual?.id
-          })
+      // Realizar el POST al backend para completar la misión
+      fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          usuario_id: usuarioActual?.id
         })
-        .then(res => res.json())
-        .then(data => {
-          setCargando(false);
-          if (data.error) {
-            alert(`❌ Error: ${data.error}`);
-            return;
-          }
-          alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
-          window.location.reload();
-        })
-        .catch(err => {
-          setCargando(false);
-          console.error('Error:', err);
-          alert('❌ Error de conexión con MAGNETO');
-        });
-      } else {
+      })
+      .then(res => res.json())
+      .then(data => {
         setCargando(false);
-        alert(`❌ ¡Reto no completado! Los sensores magnéticos no detectaron actividad suficiente. ¡Inténtalo de nuevo!`);
-      }
-    }, 4000);
+        if (data.error) {
+          alert(`❌ Error: ${data.error}`);
+          return;
+        }
+        alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
+        window.location.reload();
+      })
+      .catch(err => {
+        setCargando(false);
+        console.error('Error:', err);
+        alert('❌ Error de conexión con MAGNETO');
+      });
+    }, 1200);
   };
+
+  // Intentar completar la misión con reintentos; si falla y es la misión "Amigos por siempre",
+  // marcarla localmente y almacenar en localStorage para intentar sincronizar después.
+  const completarMisionWithRetries = async (mision, attempts = 3) => {
+    let lastError = null;
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const res = await fetch(`http://localhost:8000/api/gamification/misiones/${mision.id}/completar/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario_id: usuarioActual?.id })
+        });
+        const data = await res.json();
+        if (res.ok && !data.error) {
+          // éxito real: stop loading and refresh (same behavior as other missions)
+          setCargando(false);
+          alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
+          try { window.location.reload(); } catch(_) { }
+          return;
+        } else {
+          lastError = data.error || 'Error desconocido';
+        }
+      } catch (err) {
+        lastError = err;
+      }
+      // pequeña espera antes de reintentar
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+  // Si falló después de reintentos y es la misión de amigos, marcar localmente
+    if (mision && mision.titulo && mision.titulo.toLowerCase().includes('amigos')) {
+      // marcar la misión como completada en UI local
+      setMisiones(prev => {
+        const copy = { ...prev };
+        ['retos_diarios','retos_semanales','retos_mensuales'].forEach(key => {
+          copy[key] = copy[key].map(mi => {
+            if (mi.id === mision.id) return { ...mi, completada: true, estado: 'Completado' };
+            return mi;
+          });
+        });
+        return copy;
+      });
+
+      // encolar sync pendiente en localStorage
+      try {
+        const pendingRaw = localStorage.getItem('magboost_pending_completions');
+        const pending = pendingRaw ? JSON.parse(pendingRaw) : [];
+        pending.push({ mision_id: mision.id, usuario_id: usuarioActual?.id, ts: Date.now() });
+        localStorage.setItem('magboost_pending_completions', JSON.stringify(pending));
+      } catch (_) {}
+
+      alert('No se pudo conectar con Magneto, pero la misión ha sido marcada como completada localmente y se intentará sincronizar más tarde.');
+      setCargando(false);
+      setProgress(100);
+      // keep old behavior: show simple message and stop loading
+      return;
+    }
+
+    setCargando(false);
+    alert(`❌ No fue posible completar la misión. Detalle: ${lastError}`);
+  };
+
+  
 
   const iniciarCargaMision = (misionId) => {
     setCargando(true);
     setTimeout(() => {
       completarMision(misionId);
-    }, 2000);
+    }, 1000);
   };
 
-  // Popup previo para Amigos por siempre
-  if (mostrarPopup && misionPendiente) {
-    return (
-      <div className="misiones-popup-overlay" style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999}}>
-        <div style={{background:'white',borderRadius:'18px',padding:'32px 24px',boxShadow:'0 8px 32px rgba(0,0,0,0.18)',maxWidth:'350px',textAlign:'center',fontSize:'18px',color:'#222',fontWeight:'bold'}}>
-          <h2 style={{marginBottom:'18px'}}>Invita a un amigo a Magneto</h2>
-          <div style={{marginBottom:'12px'}}>Invita a un amigo a registrarse en Magneto y que cree su perfil.</div>
-          <a href="https://www.magneto365.com/es" target="_blank" rel="noopener noreferrer" style={{display:'block',marginBottom:'18px',color:'#007bff',textDecoration:'underline',fontWeight:'normal'}}>https://www.magneto365.com/es</a>
-          <button onClick={() => { setMostrarPopup(false); iniciarCargaMision(misionPendiente.id); }} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Continuar</button>
-        </div>
-      </div>
-    );
-  }
+  const handleCompletarClick = (mision) => {
+    // Si es la misión especial 'Amigos por siempre' mostramos el popup previo
+    if (mision && mision.titulo && mision.titulo.toLowerCase().includes('amigos')) {
+      setMisionPendiente(mision);
+      setMostrarPopup(true);
+      return;
+    }
+    // Para el resto de misiones iniciamos la carga normal
+    iniciarCargaMision(mision.id);
+  };
+  // Progress simulation for loading card
+  useEffect(() => {
+    let t = null;
+    if (cargando) {
+      setProgress(0);
+      t = setInterval(() => {
+        setProgress(p => Math.min(100, p + Math.floor(Math.random() * 8) + 4));
+      }, 300);
+    } else {
+      setProgress(0);
+    }
+    return () => { if (t) clearInterval(t); };
+  }, [cargando]);
 
-  // Pantalla de carga magnética
+  // Si estamos cargando, mostrar la antigua pantalla simple (se usa para todas las misiones ahora)
   if (cargando) {
     return (
       <div className="misiones-loading-overlay">
         <div className="misiones-loading-magnet">🧲</div>
         <h1 className="misiones-loading-title">Procesando Reto Magnético</h1>
-        <p className="misiones-loading-subtitle">
-          Esperando a que magneto nos diga que lo hiciste...
-        </p>
-        
+        <p className="misiones-loading-subtitle">Esperando a que Magneto nos diga que lo hiciste...</p>
         <div className="misiones-loading-bar-container">
           <div className="misiones-loading-bar"></div>
         </div>
         <div className="misiones-loading-dots">
           {[0, 0.2, 0.4].map((delay, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="misiones-loading-dot"
               style={{animationDelay: `${delay}s`}}
             ></div>
@@ -115,6 +182,47 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       </div>
     );
   }
+
+  // Popup previo para Amigos por siempre
+  if (mostrarPopup && misionPendiente) {
+    const link = 'https://login.magneto365.com/candidates?utm_source=google&utm_medium=cpc&utm_campaign=grupo-exito&utm_content=maxp-ads-27-20241203-panaderia&gclid=Cj0KCQiA5abIBhCaARIsAM3-zFXpWtr0uX1NJXK8CtsIlhzQKpOg3N--f4Wy8RGZIPM-Rxh09Rzaq_caAp6zEALw_wcB';
+    const handleShare = () => {
+      try {
+        if (navigator.share) {
+          navigator.share({ title: 'Magneto', text: 'Únete a Magneto', url: link });
+        } else {
+          navigator.clipboard && navigator.clipboard.writeText(link);
+          window.open(link, '_blank', 'noopener');
+          alert('Enlace copiado al portapapeles');
+        }
+      } catch (e) { console.error(e); }
+    };
+
+    return (
+      <div className="misiones-popup-overlay">
+        <div className="misiones-invite-card">
+          <div className="invite-badge">Invita a tus Amigos</div>
+          <h1 className="invite-title">Invita a un amigo a entrenar contigo</h1>
+          <p className="invite-desc">Invita a un amigo a registrarse y que cree su perfil. Comparte el enlace para que pueda empezar a entrenar.</p>
+
+          <div style={{textAlign:'center', marginTop:18}}>
+            <button className="invite-share-btn" onClick={handleShare}>Compartir Enlace&nbsp;➜</button>
+          </div>
+
+          <div className="invite-bullets">
+            <div className="bullet"><span className="dot"/>Entrena en Compañía</div>
+            <div className="bullet"><span className="dot"/>Motívense Juntos</div>
+          </div>
+
+          <div className="misiones-popup-actions" style={{marginTop:20}}>
+            <button className="misiones-popup-cancel" onClick={() => setMostrarPopup(false)}>Cancelar</button>
+            <button className="misiones-popup-accept" onClick={() => { setMostrarPopup(false); setCargando(true); completarMisionWithRetries(misionPendiente, 3); }}>Aceptar y continuar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+ 
 
   const MisionCard = ({ mision }) => (
     <div className="mision-card">
@@ -136,7 +244,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
         </span>
         {!mision.completada && (
           <button 
-            onClick={() => completarMision(mision.id, mision.titulo)}
+            onClick={() => handleCompletarClick(mision)}
             className="mision-btn-completar"
           >
             Completar

@@ -10,6 +10,7 @@ import TiendaRecompensas from './TiendaRecompensas';
 import Perfil from './Perfil';
 import RuletaPage from './RuletaPage';
 import RankingPage from './RankingPage';
+import VacantesPage from './VacantesPage';
 import './App.css';
 
 function App() {
@@ -100,6 +101,10 @@ function App() {
 
       {vistaActual === 'tienda' && (
         <TiendaRecompensas onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
+      )}
+
+      {vistaActual === 'vacantes' && (
+        <VacantesPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
       {vistaActual === 'perfil' && (
@@ -219,6 +224,7 @@ function App() {
           <span style={{fontSize: '20px'}}>🛍️</span>
           Tienda
         </button>
+        {/* Vacantes ahora en AccesoRapido */}
         {/* Ranking button removed from bottom nav; access via AccesoRapido */}
         <button 
           onClick={() => cambiarVista('perfil')}

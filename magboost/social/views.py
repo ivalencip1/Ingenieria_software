@@ -2,6 +2,11 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from core.models import PerfilUsuario
+from .models import Vacante
+from .serializers import VacanteSerializer
+from core.models import Sector
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 #----->Metodos de esta app
@@ -44,4 +49,30 @@ def ranking_usuarios(request):
         'ranking': ranking_data,
         'total_usuarios': len(ranking_data)
     })
+
+
+@api_view(['GET'])
+def listar_vacantes(request):
+    """Listar vacantes. Opcional query param: sectors=tech,health (coma-separado por name o slug)"""
+    sectors_param = request.GET.get('sectors')
+    qs = Vacante.objects.all()
+    if sectors_param:
+        requested = [s.strip() for s in sectors_param.split(',') if s.strip()]
+        # Buscar sectores por slug o por nombre
+        sectores = Sector.objects.filter(Q(slug__in=requested) | Q(name__in=requested))
+        if sectores.exists():
+            qs = qs.filter(sector__in=sectores)
+        else:
+            # intentar buscar por nombre sin coincidencias exactas
+            qs = qs.filter(sector__name__in=requested)
+
+    serializer = VacanteSerializer(qs, many=True)
+    return Response({'count': qs.count(), 'results': serializer.data})
+
+
+@api_view(['GET'])
+def detalle_vacante(request, slug):
+    vac = get_object_or_404(Vacante, slug=slug)
+    serializer = VacanteSerializer(vac)
+    return Response(serializer.data)
 

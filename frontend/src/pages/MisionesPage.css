@@ -196,6 +196,144 @@
   animation-delay: 0.4s;
 }
 
+/* Popup styles */
+.misiones-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+.misiones-popup-card {
+  width: 92%;
+  max-width: 420px;
+  background: linear-gradient(180deg, #ffffff, #fffaf0);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  text-align: center;
+  color: #2d2d2d;
+}
+.misiones-popup-icon {
+  font-size: 46px;
+  margin-bottom: 8px;
+}
+.misiones-popup-title {
+  margin: 4px 0 8px 0;
+  font-size: 20px;
+  color: #8B4513;
+}
+.misiones-popup-desc {
+  margin: 0 0 12px 0;
+  color: #555;
+}
+.misiones-popup-link-row {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:14px;
+}
+.misiones-popup-link {
+  color:#007bff;
+  text-decoration:underline;
+  font-size:14px;
+}
+.misiones-copy-btn {
+  background:#eef2ff;
+  border:1px solid #d6e0ff;
+  color:#1f3bb3;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.misiones-popup-actions { display:flex; gap:10px; justify-content:center; margin-top:8px; }
+.misiones-popup-cancel { background:transparent; border:1px solid #ccc; padding:8px 14px; border-radius:10px; cursor:pointer; }
+.misiones-popup-accept { background:#ff8c00; color:white; border:none; padding:8px 14px; border-radius:10px; cursor:pointer; }
+
+/* New invite card styles */
+.misiones-invite-card {
+  width: 92%;
+  max-width: 560px; /* narrower card per request */
+  margin: 36px auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px 34px;
+  box-shadow: 0 18px 40px rgba(15,23,42,0.10);
+  text-align: center;
+  color: #1f2937;
+}
+.invite-badge {
+  display: inline-block;
+  background: #f3e8ff;
+  color: #6b21a8;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  font-size: 14px;
+}
+.invite-title {
+  font-size: 28px;
+  margin: 8px 0 12px 0;
+  color: #0f172a;
+  font-weight: 800;
+}
+.invite-desc {
+  color: #475569;
+  max-width: 760px;
+  margin: 0 auto 20px auto;
+  font-size: 16px;
+}
+.invite-share-btn {
+  background: #ff6b35;
+  color: white;
+  border: none;
+  padding: 16px 36px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(102,92,231,0.12);
+  cursor: pointer;
+}
+.invite-share-btn:hover { filter: brightness(0.96); }
+.invite-bullets {
+  display:flex;
+  gap:24px;
+  justify-content:center;
+  margin-top:18px;
+}
+.invite-bullets .bullet { color:#334155; font-size:14px; display:flex; align-items:center; gap:8px }
+.invite-bullets .dot { width:10px; height:10px; background:#16a34a; border-radius:50%; display:inline-block }
+
+
+/* Enhanced loading card */
+.misiones-loading-card {
+  background: rgba(255,255,255,0.95);
+  padding: 26px 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  text-align:center;
+  color:#8B4513;
+}
+.misiones-loading-progress {
+  height: 12px;
+  width: 320px;
+  background: rgba(139,69,19,0.12);
+  border-radius: 10px;
+  overflow:hidden;
+  margin: 18px auto 8px auto;
+}
+.misiones-loading-progress-fill {
+  height:100%;
+  background: linear-gradient(90deg,#ff6b35,#f7931e);
+  width:0%;
+  transition: width 0.5s ease;
+}
+.misiones-loading-percent { margin-top:6px; font-weight:700; }
+
 /* ========== ANIMACIONES ========== */
 @keyframes magneticSpin {
   0% { transform: rotate(0deg) scale(1); }

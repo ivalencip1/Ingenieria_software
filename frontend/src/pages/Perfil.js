@@ -9,6 +9,12 @@ const Perfil = ({ onVolver, usuarioActual }) => {
   const [misionesExpanded, setMisionesExpanded] = useState(false);
   const [misionesCompletadas, setMisionesCompletadas] = useState([]);
   const [insigniaSeleccionada, setInsigniaSeleccionada] = useState(null);
+  const [editingBasics, setEditingBasics] = useState(false);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
+  const [editBiografia, setEditBiografia] = useState('');
+  const [savingNames, setSavingNames] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
 
   useEffect(() => {
     // Marcar que el usuario visitó la pantalla de Perfil
@@ -19,6 +25,13 @@ const Perfil = ({ onVolver, usuarioActual }) => {
         const q = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
         const response = await axios.get(`http://localhost:8000/api/core/perfil-completo/${q}`);
         setPerfilData(response.data);
+        // Inicializar campos de edición con los valores actuales
+        try {
+          const p = response.data?.perfil;
+          setEditFirstName(p?.first_name || '');
+          setEditLastName(p?.last_name || '');
+          setEditBiografia(p?.bio || response.data?.biografia || '');
+        } catch (e) {}
       } catch (err) {
         setError('Error al cargar el perfil');
         console.error('Error:', err);
@@ -83,10 +96,72 @@ const Perfil = ({ onVolver, usuarioActual }) => {
     window.location.href = '/';
   };
 
+  // Guardar cambios de nombre y apellido
+  const guardarNombres = async () => {
+    if (!usuarioActual?.id) return;
+    const first = (editFirstName || '').trim();
+    const last = (editLastName || '').trim();
+    const bio = (editBiografia || '').trim();
+    if (!first || !last) {
+      setSaveMsg('Por favor, completa nombre y apellido');
+      setTimeout(() => setSaveMsg(''), 2000);
+      return;
+    }
+    setSavingNames(true);
+    try {
+      await axios.patch(`http://localhost:8000/api/usuarios/${usuarioActual.id}/`, {
+        first_name: first,
+        last_name: last,
+        // backend user model uses 'bio' as the field name
+        bio: bio,
+      });
+      // Actualizar vista local
+      const nuevo = { ...perfilData };
+      if (nuevo.perfil) {
+        nuevo.perfil.first_name = first;
+        nuevo.perfil.last_name = last;
+        nuevo.perfil.bio = bio;
+        // also update the top-level 'biografia' that perfil_completo returns
+        nuevo.biografia = bio;
+      }
+      setPerfilData(nuevo);
+      // Sincronizar almacenamiento local si existe
+      try {
+        const uRaw = localStorage.getItem('usuario');
+        if (uRaw) {
+          const u = JSON.parse(uRaw);
+          localStorage.setItem('usuario', JSON.stringify({ ...u, first_name: first, last_name: last }));
+        }
+      } catch (_) {}
+      setSaveMsg('Guardado');
+        // Cerrar el panel de edición al guardar correctamente
+        setEditingBasics(false);
+      setTimeout(() => setSaveMsg(''), 2000);
+    } catch (err) {
+      console.error('Error guardando nombres:', err);
+      setSaveMsg('Error al guardar');
+      setTimeout(() => setSaveMsg(''), 2500);
+    } finally {
+      setSavingNames(false);
+    }
+  };
+
   return (
     <div className="perfil-container">
       {/* Header del perfil */}
       <div className="perfil-header">
+        <button
+          className="perfil-edit-btn"
+          onClick={() => setEditingBasics(v => !v)}
+          aria-label={editingBasics ? 'Cerrar edición' : 'Editar perfil'}
+          title={editingBasics ? 'Cerrar edición' : 'Editar perfil'}
+        >
+          {/* ícono lápiz */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+          </svg>
+        </button>
         <div className="avatar-section">
           <div className="avatar">
             <span className="avatar-text">{perfil.first_name.charAt(0)}{perfil.last_name.charAt(0)}</span>
@@ -157,13 +232,66 @@ const Perfil = ({ onVolver, usuarioActual }) => {
                 ))
               ) : (
                 <div className="no-misiones">
-                  <p>En proceso de construccion</p>
+                  <p>No hay misiones completadas aún</p>
                 </div>
               )}
             </div>
           )}
         </div>
       </div>
+
+      
+
+      {/* Edición (se muestra al pulsar el lápiz) */}
+      {editingBasics && (
+        <div className="editar-nombres-box">
+          <h3 className="editar-nombres-title">Editar datos básicos</h3>
+          <div className="editar-nombres-grid">
+            <div className="editar-nombres-field">
+              <label className="editar-nombres-label">Nombre</label>
+              <input
+                type="text"
+                className="editar-nombres-input"
+                value={editFirstName}
+                onChange={(e) => setEditFirstName(e.target.value)}
+                placeholder="Nombre"
+              />
+            </div>
+            <div className="editar-nombres-field">
+              <label className="editar-nombres-label">Apellido</label>
+              <input
+                type="text"
+                className="editar-nombres-input"
+                value={editLastName}
+                onChange={(e) => setEditLastName(e.target.value)}
+                placeholder="Apellido"
+              />
+            </div>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <label className="editar-nombres-label">Biografía</label>
+            <textarea
+              className="editar-nombres-textarea"
+              value={editBiografia}
+              onChange={(e) => setEditBiografia(e.target.value)}
+              placeholder="Escribe una breve biografía..."
+              rows={4}
+            />
+          </div>
+          <div className="editar-nombres-actions">
+            <button
+              onClick={guardarNombres}
+              disabled={savingNames}
+              className="editar-nombres-save"
+            >
+              {savingNames ? 'Guardando...' : 'Guardar cambios'}
+            </button>
+            {!!saveMsg && (
+              <span className={`editar-nombres-msg ${saveMsg === 'Guardado' ? 'ok' : 'err'}`}>{saveMsg}</span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Insignias obtenidas - Horizontal */}
       <div className="insignias-section">
@@ -238,7 +366,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
             boxSizing: 'border-box',
             textAlign: 'center'
           }}
-          aria-label="Cerrar sesión en la pag"
+          aria-label="Cerrar sesión"
         >
           Cerrar sesión
         </button>

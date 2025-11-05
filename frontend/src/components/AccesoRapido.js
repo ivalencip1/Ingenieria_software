@@ -1,4 +1,3 @@
-// src/components/AccesoRapido.js
 import React, { useState, useEffect } from 'react';
 import { puedeGirarRuleta } from '../services/apiRuleta';
 
@@ -29,7 +28,7 @@ function AccesoRapido({ onCambiarVista }) {
   };
 
   const botones = [
-    {titulo: 'Vacantes recomendadas', icono: '✅', color: '#FFB74D', onClick: () => alert('Vacantes')},
+    {titulo: 'Vacantes recomendadas', icono: '✅', color: '#FFB74D', onClick: () => onCambiarVista && onCambiarVista('vacantes')},
     {titulo: 'Ruleta diaria', icono: '🎯', color: '#4DB6AC', onClick: manejarRuleta},
     {titulo: 'Ranking de usuarios', icono: '⭐', color: '#42A5F5', onClick: () => onCambiarVista('ranking')}
   ];

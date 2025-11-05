@@ -210,7 +210,7 @@ function SignUpPage({ onSignUpSuccess }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="bio">Biografía (opcional)</label>
+            <label htmlFor="bio">Biografía </label>
             <textarea
               id="bio"
               name="bio"

@@ -50,7 +50,6 @@ export const girarRuleta = async (usuarioId) => {
     }
 };
 
-// Obtener historial de giros
 export const obtenerHistorialRuleta = async () => {
     try {
         const response = await fetch(`${API_BASE_URL}/rewards/ruleta/historial/`);

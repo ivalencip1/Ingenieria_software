@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.decorators import api_view
 from .models import PerfilUsuario
+from .models import Sector
 from .serializers import PerfilUsuarioSerializer
 from gamification.models import MisionUsuario, InsigniaUsuario
 from django.utils import timezone
@@ -215,6 +216,17 @@ def save_survey(request):
         usuario.main_motivation = request.data.get('main_motivation', '')
         usuario.frequency = request.data.get('frequency', '')
         usuario.notification_method = request.data.get('notification_method', '')
+        # Guardar sectores seleccionados (lista de nombres)
+        sectors_input = request.data.get('sectors', None)
+        if sectors_input is not None:
+            # Esperamos una lista de strings; crear o recuperar cada Sector
+            sector_objs = []
+            for s in sectors_input:
+                if not s: continue
+                obj, _ = Sector.objects.get_or_create(name=s)
+                sector_objs.append(obj)
+            # Reemplazar la relación ManyToMany
+            usuario.sectors.set(sector_objs)
         usuario.survey_completed = True
         
         # Actualizar biografía si se proporciona

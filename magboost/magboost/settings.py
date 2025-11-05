@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     
-    # Nuestras apps
+    # Las apps de todo el proyecto 
     'core',
     'gamification',
     'magnetosimulator',
@@ -68,7 +68,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Configuración adicional CORS para desarrollo
-CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo
+CORS_ALLOW_ALL_ORIGINS = True  # Solo para desarrollo inicialmente
 CORS_ALLOW_CREDENTIALS = True
 
 
