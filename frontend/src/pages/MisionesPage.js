@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../services/apiUsuarios';
 import './MisionesPage.css';
 
 function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
@@ -15,10 +16,17 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
 
   useEffect(() => {
     const params = usuarioActual?.id ? `?usuario_id=${usuarioActual.id}` : '';
-    fetch(`http://localhost:8000/api/gamification/todas-misiones/${params}`)
-      .then(res => res.json())
+    fetch(`http://localhost:8000/api/gamification/todas-misiones/${params}`, { credentials: 'include' })
+      .then(async res => {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          return res.json();
+        }
+        const text = await res.text();
+        throw new Error(`Respuesta inesperada del servidor: ${text.substring(0,200)}`);
+      })
       .then(data => setMisiones(data))
-      .catch(err => console.error(err));
+      .catch(err => console.error('Error cargando misiones:', err));
   }, [usuarioActual]);
 
 
@@ -39,30 +47,43 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     setCargando(true);
     setTimeout(() => {
       // Realizar el POST al backend para completar la misión
-      fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          usuario_id: usuarioActual?.id
-        })
-      })
-      .then(res => res.json())
-      .then(data => {
-        setCargando(false);
-        if (data.error) {
-          alert(`❌ Error: ${data.error}`);
-          return;
+      // Prefer axios client (sends token) but fall back to fetch if needed.
+      (async () => {
+        try {
+          // Try axios (api) first if token present
+          let responseData = null;
+          if (localStorage.getItem('token')) {
+            const res = await api.post(`/gamification/misiones/${misionId}/completar/`, { usuario_id: usuarioActual?.id });
+            responseData = res.data;
+          } else {
+            const res = await fetch(`http://localhost:8000/api/gamification/misiones/${misionId}/completar/`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ usuario_id: usuarioActual?.id })
+            });
+            const ct = res.headers.get('content-type') || '';
+            if (ct.includes('application/json')) {
+              responseData = await res.json();
+            } else {
+              const text = await res.text();
+              throw new Error('Respuesta no-JSON del servidor: ' + text.substring(0,300));
+            }
+          }
+
+          setCargando(false);
+          if (responseData.error) {
+            alert(`❌ Error: ${responseData.error}`);
+            return;
+          }
+          alert(`¡Misión completada! +${responseData.puntos_ganados} MagnetoPoints obtenidos!`);
+          window.location.reload();
+        } catch (err) {
+          setCargando(false);
+          console.error('Error al completar misión:', err);
+          alert('❌ Error de conexión con MAGNETO o respuesta inesperada.');
         }
-        alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
-        window.location.reload();
-      })
-      .catch(err => {
-        setCargando(false);
-        console.error('Error:', err);
-        alert('❌ Error de conexión con MAGNETO');
-      });
+      })();
     }, 1200);
   };
 
@@ -72,13 +93,30 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     let lastError = null;
     for (let i = 0; i < attempts; i++) {
       try {
-        const res = await fetch(`http://localhost:8000/api/gamification/misiones/${mision.id}/completar/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ usuario_id: usuarioActual?.id })
-        });
-        const data = await res.json();
-        if (res.ok && !data.error) {
+        // attempt with axios if token present, otherwise fetch with credentials
+        let data = null;
+        let ok = false;
+        if (localStorage.getItem('token')) {
+          const res = await api.post(`/gamification/misiones/${mision.id}/completar/`, { usuario_id: usuarioActual?.id });
+          data = res.data;
+          ok = res.status >= 200 && res.status < 300;
+        } else {
+          const res = await fetch(`http://localhost:8000/api/gamification/misiones/${mision.id}/completar/`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario_id: usuarioActual?.id })
+          });
+          const ct = res.headers.get('content-type') || '';
+          ok = res.ok;
+          if (ct.includes('application/json')) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            throw new Error('Respuesta no-JSON del servidor: ' + text.substring(0,400));
+          }
+        }
+        if (ok && !data.error) {
           // éxito real: stop loading and refresh (same behavior as other missions)
           setCargando(false);
           alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);

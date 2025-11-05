@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/apiUsuarios';
 import './TiendaRecompensas.css';
 
 
-const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
+const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => {
     const [categorias, setCategorias] = useState([]);
     const [historial, setHistorial] = useState([]);
     const [puntosUsuario, setPuntosUsuario] = useState(0);
@@ -13,6 +14,10 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
     const [mensaje, setMensaje] = useState(null);
     const [mostrarPopup, setMostrarPopup] = useState(false);
     const [recomendaciones, setRecomendaciones] = useState([]);
+    const [mostrarUploadModal, setMostrarUploadModal] = useState(false);
+    const [uploadedFile, setUploadedFile] = useState(null);
+    const [uploadError, setUploadError] = useState(null);
+    const [processingResume, setProcessingResume] = useState(false);
 
 
     const cargarDatos = useCallback(async () => {
@@ -58,26 +63,60 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
     const comprarRecompensa = async (recompensaId) => {
         setCargandoMagneto(true);
         try {
-            const response = await fetch('http://localhost:8000/api/rewards/tienda/comprar/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ recompensa_id: recompensaId })
-            });
-            const data = await response.json();
-            if (response.ok) {
+            // Use axios instance so Authorization token (from localStorage) is included
+            const res = await api.post('/rewards/tienda/comprar/', { recompensa_id: recompensaId, usuario_id: usuarioActual?.id });
+            const data = res.data;
+            if (res.status >= 200 && res.status < 300) {
                 setMensaje({ tipo: 'exito', texto: data.mensaje });
+                // Update local state with remaining points and refresh categories/historial
+                if (typeof data.puntos_restantes !== 'undefined') {
+                    setPuntosUsuario(data.puntos_restantes);
+                }
+                // reload categories and historial to reflect new canjeable status
+                await cargarDatos();
+
+                // Also refresh global usuarioActual so header and other components show updated points
+                try {
+                    if (onActualizarUsuario && usuarioActual?.id) {
+                        // Prefer authenticated call; if it fails, fallback to public perfil_completo
+                        try {
+                            const usuarioRes = await api.get(`/usuarios/${usuarioActual.id}/`);
+                            const usuarioData = usuarioRes.data;
+                            onActualizarUsuario(usuarioData);
+                            try { localStorage.setItem('usuario', JSON.stringify(usuarioData)); } catch(_) {}
+                        } catch (errInner) {
+                            console.warn('Fallo api.get usuario, intentando perfil_completo:', errInner?.response?.data || errInner);
+                            try {
+                                const resp = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${usuarioActual.id}`);
+                                if (resp.ok) {
+                                    const data = await resp.json();
+                                    if (data.perfil) {
+                                        onActualizarUsuario(data.perfil);
+                                        try { localStorage.setItem('usuario', JSON.stringify(data.perfil)); } catch(_) {}
+                                    }
+                                }
+                            } catch (errFetch) {
+                                console.warn('Fallback perfil_completo falló:', errFetch);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('No se pudo refrescar usuario tras compra:', err?.response?.data || err);
+                }
             } else {
-                setMensaje({ tipo: 'error', texto: data.error });
+                setMensaje({ tipo: 'error', texto: data.error || 'Error al canjear' });
             }
             setTimeout(() => setMensaje(null), 2000);
         } catch (error) {
-            setMensaje({ tipo: 'error', texto: 'Error de conexión' });
+            const texto = error?.response?.data?.error || 'Error de conexión';
+            setMensaje({ tipo: 'error', texto });
             setTimeout(() => setMensaje(null), 2000);
         }
         setTimeout(() => {
             setCargandoMagneto(false);
-            window.location.reload();
+            // avoid full reload; UI updated via cargarDatos()
+            // but keep a small safety reload if state seems inconsistent
+            // window.location.reload();
         }, 2000);
     };
 
@@ -108,7 +147,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
 
     return (
         <>
-        {mostrarPopup && (
+            {mostrarPopup && (
             <div style={{
                 position: 'fixed',
                 top: 0,
@@ -142,6 +181,51 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
                         )}
                     </ul>
                     <button onClick={() => setMostrarPopup(false)} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Cerrar</button>
+                </div>
+            </div>
+        )}
+        {mostrarUploadModal && (
+            <div style={{position:'fixed', top:0, left:0, width:'100vw', height:'100vh', background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999}}>
+                <div style={{background:'white', borderRadius:12, padding:24, width: '92%', maxWidth:480, textAlign:'left'}}>
+                    <h2 style={{marginTop:0}}>Sube tu CV (.pdf)</h2>
+                    <p style={{color:'#333'}}>Sube tu hoja de vida en formato <strong>.pdf</strong>. Nuestro asesor generará recomendaciones para mejorarla.</p>
+                    <div style={{marginTop:12}}>
+                        <input type="file" accept="application/pdf" onChange={(e)=>{
+                            setUploadError(null);
+                            const f = e.target.files && e.target.files[0];
+                            if (!f) { setUploadedFile(null); return; }
+                            if (f.type !== 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf')) {
+                                setUploadedFile(null);
+                                setUploadError('Sólo se permiten archivos PDF');
+                                return;
+                            }
+                            setUploadedFile(f);
+                        }} />
+                        {uploadError && <div style={{color:'red', marginTop:8}}>{uploadError}</div>}
+                    </div>
+                    <div style={{display:'flex', justifyContent:'flex-end', gap:8, marginTop:18}}>
+                        <button onClick={()=>{ setMostrarUploadModal(false); setUploadedFile(null); setUploadError(null); }} style={{background:'#e5e7eb', border:'none', padding:'8px 12px', borderRadius:8, cursor:'pointer'}}>Cancelar</button>
+                        <button onClick={async ()=>{
+                            if (!uploadedFile) { setUploadError('Selecciona un archivo PDF antes de continuar'); return; }
+                            setProcessingResume(true);
+                            // Simular procesamiento y generar recomendaciones
+                            setTimeout(()=>{
+                                const recs = [
+                                    'Incluye un resumen profesional al inicio con tus logros más relevantes.',
+                                    'Usa viñetas para describir logros cuantificables (ej.: "Aumenté ventas 20%" ).',
+                                    'Asegúrate de que tu información de contacto esté actualizada y visible.',
+                                    'Adapta palabras clave al sector/puesto al que aplicas (mira la oferta).',
+                                    'Mantén el diseño limpio: tipografía legible y evita párrafos largos.'
+                                ];
+                                setRecomendaciones(recs);
+                                setMostrarUploadModal(false);
+                                setProcessingResume(false);
+                                setUploadedFile(null);
+                                setUploadError(null);
+                                setMostrarPopup(true);
+                            }, 1600);
+                        }} style={{background:'#6D28D9', color:'white', border:'none', padding:'10px 14px', borderRadius:8, cursor:'pointer'}}>Continuar</button>
+                    </div>
                 </div>
             </div>
         )}
@@ -200,6 +284,15 @@ const TiendaRecompensas = ({ onVolver, usuarioActual }) => {
 
             {vistaActual === 'tienda' ? (
                 <div className="products-grid">
+                    {/* Custom reward: Recomendaciones CV */}
+                    <div className="product-card">
+                        <div className="card-icon">📄</div>
+                        <h3>Recomendaciones para Hoja de Vida</h3>
+                        <p>Sube tu CV en PDF y nuestro asesor te dará recomendaciones prácticas para mejorarlo.</p>
+                        <button className="buy-btn" onClick={() => setMostrarUploadModal(true)}>
+                            <span className="diamond"></span> Subir CV (.pdf)
+                        </button>
+                    </div>
                     {categorias
                         .filter(categoria => categoriaActual === 'todas' || categoria.id === categoriaActual)
                         .map(categoria => 

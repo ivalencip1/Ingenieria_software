@@ -14,6 +14,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
 from .serializers import PremioRuletaSerializer, RuletaDiariaUsuarioSerializer
+import logging
 
 User = get_user_model()
 #-----------------------Nuevas vistas para la ruleta mejorada---------------------
@@ -176,7 +177,15 @@ def api_recompensas(request):
     })
 
 def api_categorias_recompensas(request):
-    usuario = request.user if request.user.is_authenticated else User.objects.first()
+    # Allow callers to request data for a specific user via ?usuario_id=<id>
+    usuario_id = request.GET.get('usuario_id')
+    if usuario_id:
+        try:
+            usuario = User.objects.get(id=usuario_id)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    else:
+        usuario = request.user if request.user.is_authenticated else User.objects.first()
     if not usuario:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
     
@@ -215,11 +224,51 @@ def api_comprar_recompensa(request):
         return JsonResponse({'error': 'Método no permitido'}, status=405)
     
     try:
-        data = json.loads(request.body)
-        recompensa_id = data.get('recompensa_id')
-        
+        # Soporte robusto: aceptar JSON en request.body o form-encoded en request.POST.
+        data = {}
+        try:
+            if request.content_type and 'application/json' in request.content_type:
+                body = request.body.decode('utf-8') if hasattr(request, 'body') else ''
+                data = json.loads(body) if body else {}
+            else:
+                # Intentar obtener desde request.POST (form-data) o fallback a JSON
+                data = request.POST.dict() if hasattr(request, 'POST') else {}
+                if not data:
+                    body = request.body.decode('utf-8') if hasattr(request, 'body') else ''
+                    data = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Datos JSON inválidos'}, status=400)
+
+        # Aceptar varias variantes del nombre del campo por compatibilidad
+        recompensa_id = data.get('recompensa_id') or data.get('recompensaId') or data.get('id')
+        usuario_id_body = data.get('usuario_id') or data.get('usuarioId') or data.get('user_id')
+
         if not recompensa_id:
             return JsonResponse({'error': 'ID de recompensa requerido'}, status=400)
+        # Debug logging: mostrar qué usuario está haciendo la petición y los puntos actuales
+        try:
+            logger = logging.getLogger('magboost.rewards')
+        except Exception:
+            logger = None
+        try:
+            # determinar usuario objetivo: preferir usuario_id pasado en el body, luego request.user, luego first
+            usuario_log = None
+            if usuario_id_body:
+                try:
+                    usuario_log = User.objects.get(id=usuario_id_body)
+                except User.DoesNotExist:
+                    usuario_log = None
+            if not usuario_log and getattr(request, 'user', None) and request.user.is_authenticated:
+                usuario_log = request.user
+            if not usuario_log:
+                usuario_log = User.objects.first()
+            log_msg = f"Compra request: recompensa_id={recompensa_id}, content_type={request.content_type}, usuario_id={(usuario_log.id if usuario_log else 'None')}, usuario_username={(usuario_log.username if usuario_log else 'None')}, puntos_actuales={(usuario_log.puntos_totales if usuario_log else 'None')}"
+            if logger:
+                logger.info(log_msg)
+            else:
+                print(log_msg)
+        except Exception as e:
+            print('Error al loggear compra:', e)
         with transaction.atomic():
             try:
                 recompensa = Recompensa.objects.get(id=recompensa_id, disponible=True)

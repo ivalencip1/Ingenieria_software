@@ -26,7 +26,33 @@ function App() {
         setLoading(true);
         const usuarioGuardado = localStorage.getItem('usuario');
         if (usuarioGuardado) {
-          setUsuarioActual(JSON.parse(usuarioGuardado));
+          const parsed = JSON.parse(usuarioGuardado);
+          setUsuarioActual(parsed);
+          // Fuerza sincronización con servidor: si hay id, pedir perfil actualizado y sobrescribir localStorage
+          if (parsed?.id) {
+            try {
+              // Intentar endpoint autenticado primero
+              const resp = await usuariosAPI.detalle(parsed.id);
+              if (resp && resp.data) {
+                setUsuarioActual(resp.data);
+                try { localStorage.setItem('usuario', JSON.stringify(resp.data)); } catch(_) {}
+              }
+            } catch (e) {
+              // Fallback a perfil_completo público
+              try {
+                const fallback = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${parsed.id}`);
+                if (fallback.ok) {
+                  const data = await fallback.json();
+                  if (data.perfil) {
+                    setUsuarioActual(data.perfil);
+                    try { localStorage.setItem('usuario', JSON.stringify(data.perfil)); } catch(_) {}
+                  }
+                }
+              } catch (_e) {
+                // Si falla el fallback, no hacemos nada más
+              }
+            }
+          }
         }
       } catch (error) {
         console.error('Error al cargar usuario:', error);
@@ -46,7 +72,19 @@ function App() {
           const res = await usuariosAPI.detalle(usuarioActual.id);
           setUsuarioActual(res.data);
         } catch (error) {
-          // Si falla, mantener el usuario actual
+          // Si falla (ej. token faltante), intentar fallback a perfil_completo público
+          try {
+            const resp = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${usuarioActual.id}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data.perfil) {
+                setUsuarioActual(data.perfil);
+                try { localStorage.setItem('usuario', JSON.stringify(data.perfil)); } catch(_) {}
+              }
+            }
+          } catch (e) {
+            // mantener usuario actual si todo falla
+          }
         }
       };
       actualizarUsuarioActual();
@@ -100,7 +138,7 @@ function App() {
       )}
 
       {vistaActual === 'tienda' && (
-        <TiendaRecompensas onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
+        <TiendaRecompensas onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} onActualizarUsuario={setUsuarioActual} />
       )}
 
       {vistaActual === 'vacantes' && (
