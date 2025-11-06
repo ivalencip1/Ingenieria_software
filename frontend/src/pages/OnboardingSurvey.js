@@ -285,7 +285,11 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
                         className={`option-button ${formData[question.id] === option.value ? 'selected' : ''}`}
                         onClick={() => handleRadioChange(question.id, option.value)}
                       >
-                        <IconComponent className="option-icon" size={20} />
+                        {IconComponent ? (
+                          <IconComponent className="option-icon" size={20} />
+                        ) : (
+                          <span className="option-icon-fallback">•</span>
+                        )}
                         <span>{option.label}</span>
                       </button>
                     );
@@ -310,7 +314,11 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
                           checked={(formData[question.id] || []).includes(option.value)}
                           onChange={() => handleCheckboxChange(question.id, option.value)}
                         />
-                        <IconComponent size={20} style={{ marginRight: '10px' }} />
+                        {IconComponent ? (
+                          <IconComponent size={20} style={{ marginRight: '10px' }} />
+                        ) : (
+                          <span style={{ width: 20, display: 'inline-block', marginRight: '10px' }}>•</span>
+                        )}
                         <span className="checkbox-label">{option.label}</span>
                       </label>
                     );

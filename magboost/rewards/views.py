@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from django.utils import timezone
 from .serializers import PremioRuletaSerializer, RuletaDiariaUsuarioSerializer
 import logging
+from django.core.files.base import ContentFile
 
 User = get_user_model()
 #-----------------------Nuevas vistas para la ruleta mejorada---------------------
@@ -327,6 +328,56 @@ def api_historial_compras(request):
         })
 
     return JsonResponse({'historial': historial})
+
+
+@api_view(['POST'])
+def api_upload_cv(request):
+    """Endpoint para subir el PDF asociado a una compra y marcarla como canjeada."""
+    try:
+        compra_id = request.data.get('compra_id') or request.POST.get('compra_id')
+        if not compra_id:
+            return JsonResponse({'error': 'ID de compra requerido'}, status=400)
+
+        try:
+            compra = CompraRecompensa.objects.select_related('usuario').get(id=compra_id)
+        except CompraRecompensa.DoesNotExist:
+            return JsonResponse({'error': 'Compra no encontrada'}, status=404)
+
+        # Require authenticated user and ownership
+        if not request.user or not request.user.is_authenticated:
+            return JsonResponse({'error': 'Autenticación requerida'}, status=401)
+        if compra.usuario.id != request.user.id:
+            return JsonResponse({'error': 'No permitido: la compra no pertenece al usuario'}, status=403)
+
+        # File must be included in request.FILES under key 'cv'
+        uploaded = None
+        if hasattr(request, 'FILES') and request.FILES:
+            uploaded = request.FILES.get('cv')
+        if not uploaded:
+            return JsonResponse({'error': 'Archivo PDF (cv) requerido bajo campo "cv"'}, status=400)
+
+        # Optionally validate content type/extension
+        fname = uploaded.name
+        if not (fname.lower().endswith('.pdf') or uploaded.content_type == 'application/pdf'):
+            return JsonResponse({'error': 'Sólo se permiten archivos PDF'}, status=400)
+
+        # Save file to model field
+        compra.cv_file.save(fname, uploaded, save=False)
+        compra.canjeado = True
+        compra.save()
+
+        # Return recommendations (we can generate simple static list for now)
+        recommendations = [
+            'Incluye un resumen profesional al inicio con tus logros más relevantes.',
+            'Usa viñetas para describir logros cuantificables (ej.: "Aumenté ventas 20%" ).',
+            'Asegúrate de que tu información de contacto esté actualizada y visible.',
+            'Adapta palabras clave al sector/puesto al que aplicas (mira la oferta).',
+            'Mantén el diseño limpio: tipografía legible y evita párrafos largos.'
+        ]
+
+        return JsonResponse({'success': True, 'recomendaciones': recommendations})
+    except Exception as e:
+        return JsonResponse({'error': f'Error interno: {str(e)}'}, status=500)
 
 
 @csrf_exempt

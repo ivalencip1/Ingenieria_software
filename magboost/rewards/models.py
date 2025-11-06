@@ -32,6 +32,7 @@ class CompraRecompensa(models.Model):
     puntos_gastados = models.IntegerField()
     fecha_compra = models.DateTimeField(auto_now_add=True)
     canjeado = models.BooleanField(default=False)  # Si ya utilizó la recompensa
+    cv_file = models.FileField(upload_to='compras_cv/', null=True, blank=True)
     
     class Meta:
         ordering = ['-fecha_compra']

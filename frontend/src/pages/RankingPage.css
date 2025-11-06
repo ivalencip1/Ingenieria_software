@@ -270,3 +270,84 @@
     font-size: 16px;
   }
 }
+
+/* ----- Podio (Top 3) styling and small visual improvements ----- */
+:root{
+  --text-strong: #0f1724;
+  --muted: #4b5563;
+  --accent: #f59e0b; /* orange accent used for avatars and highlights */
+}
+
+/* page background slightly lighter */
+.ranking-page{ background: #fbfcfe !important; }
+
+.ranking-header{
+  box-shadow: 0 1px 6px rgba(16,24,40,0.06) !important;
+  border-bottom: 1px solid rgba(16,24,40,0.04);
+}
+
+.ranking-back-btn{ color: var(--text-strong); border-radius:8px; }
+.ranking-back-btn:hover{ background: rgba(16,24,40,0.03); }
+.ranking-title{ color: var(--text-strong); }
+.ranking-loading{ color: #475569 }
+
+/* Podio: give each of the top 3 a distinct, visible color */
+.podio-card{ background:#fff; border:1px solid rgba(16,24,40,0.05); }
+.podio-primero .podio-avatar{ background: #FFD700 !important; } /* gold */
+.podio-segundo .podio-avatar{ background: #9CA3AF !important; } /* silver/gray */
+.podio-tercero .podio-avatar{ background: #CD7F32 !important; } /* bronze */
+.podio-corona{ top: -28px; }
+
+/* Restore the list container to its original clean white card look */
+.ranking-lista{ background: white; margin: 20px; padding: 20px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+
+/* Restore standard row appearance for the general classification */
+.ranking-item{ display:flex; align-items:center; gap:15px; padding:15px; border-radius:12px; margin-bottom:10px; background:#ffffff; transition: all 0.2s; }
+.ranking-item:hover{ transform: translateX(5px); box-shadow:0 6px 20px rgba(16,24,40,0.04); }
+.ranking-item-actual{ background:#fff3e0; border:2px solid #ef983a; }
+
+.ranking-posicion{ font-size:16px; font-weight:700; color:#374151 }
+.ranking-nombre{ color: #111318 }
+.ranking-puntos-numero{ color: var(--accent); font-weight:700 }
+
+/* Badges and avatars keep the accent color for consistency */
+.ranking-categoria-badge{ font-weight:700; padding:5px 12px; background: rgba(0,0,0,0.06); color: #fff }
+.ranking-avatar{ background: var(--accent) !important; color: #fff !important; box-shadow: 0 4px 12px rgba(16,24,40,0.08); }
+
+/* Ensure badges on the white rows are readable */
+.ranking-lista .ranking-item .ranking-categoria-badge{ background: rgba(0,0,0,0.06); color: #0f1724 }
+
+/* Alternate backgrounds in the general classification: odd = white, even = green */
+.ranking-lista .ranking-item:nth-child(odd) {
+  background: #ffffff;
+}
+.ranking-lista .ranking-item:nth-child(even) {
+  background: #3fc5b2; /* teal - replaced green with image color */
+}
+
+/* Text/colors for even (green) rows */
+.ranking-lista .ranking-item:nth-child(even) .ranking-nombre,
+.ranking-lista .ranking-item:nth-child(even) .ranking-posicion,
+.ranking-lista .ranking-item:nth-child(even) .ranking-puntos-numero,
+.ranking-lista .ranking-item:nth-child(even) .ranking-categoria-badge {
+  color: #ffffff !important;
+}
+
+/* Badges on green rows: translucent white */
+.ranking-lista .ranking-item:nth-child(even) .ranking-categoria-badge {
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+}
+
+/* Ensure odd (white) rows keep dark text */
+.ranking-lista .ranking-item:nth-child(odd) .ranking-nombre,
+.ranking-lista .ranking-item:nth-child(odd) .ranking-posicion,
+.ranking-lista .ranking-item:nth-child(odd) .ranking-puntos-numero,
+.ranking-lista .ranking-item:nth-child(odd) .ranking-categoria-badge {
+  color: #0f1724 !important;
+}
+
+/* Slight typography tweaks */
+.ranking-lista .ranking-item .ranking-nombre { font-weight:600 }
+
+

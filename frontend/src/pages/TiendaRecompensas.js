@@ -20,6 +20,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
     const [uploadError, setUploadError] = useState(null);
     const [processingResume, setProcessingResume] = useState(false);
     const [buyingId, setBuyingId] = useState(null);
+    const [pendingPurchaseId, setPendingPurchaseId] = useState(null);
 
 
     const cargarDatos = useCallback(async () => {
@@ -78,6 +79,175 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
         setMostrarPopup(true);
     };
 
+    const openSectorModalForCompra = async (compra) => {
+        // Instead of opening a modal, fetch the sectors saved in the user's profile
+        // and immediately generate tips and mark the purchase as canjeada on the server.
+        try {
+            const res = await api.get(`/core/perfil-completo/?usuario_id=${usuarioActual?.id}`);
+            const perfil = res && res.data && res.data.perfil ? res.data.perfil : null;
+            const sectors = (perfil && perfil.sectors) ? perfil.sectors : [];
+
+            // build tips from sectors
+            const tips = [];
+            // normalize sector names (lowercase, remove accents) to match keys in SECTOR_TIPS
+                const normalize = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            (sectors.length ? sectors : []).forEach(s => {
+                const key = normalize(s);
+                if (SECTOR_TIPS[key]) {
+                    tips.push(...SECTOR_TIPS[key]);
+                }
+            });
+
+            setRecomendaciones(tips.length ? tips : ['No hay tips para tus sectores seleccionados.']);
+
+            // mark purchase as canjeada in server
+            if (compra && compra.id) {
+                try {
+                    await api.post('/rewards/tienda/canjear/', { compra_id: compra.id });
+                } catch (err) {
+                    console.error('Error marcando compra canjeada:', err);
+                }
+            }
+
+            // refresh data
+            await cargarDatos();
+            setMostrarPopup(true);
+        } catch (err) {
+            console.error('Error fetching perfil for sectors:', err);
+            // fallback: show a generic tip set
+            setRecomendaciones(['No pudimos obtener tus sectores. Revisa tu perfil para configurarlos.']);
+            setMostrarPopup(true);
+        }
+    };
+
+    const SECTOR_TIPS = {
+        // English keys
+        tech: [
+            'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
+            'Muestra logros cuantificables: proyectos con métricas y resultados.'
+        ],
+        health: [
+            'Resalta experiencia en protocolos y certificaciones relevantes.',
+            'Incluye resultados medibles como mejoras en KPIs de salud.'
+        ],
+        education: [
+            'Menciona experiencia en diseño curricular y resultados de aprendizaje.',
+            'Incluye acciones concretas: número de estudiantes, cursos impartidos.'
+        ],
+        finance: [
+            'Incluye logros en reducción de costes o aumento de ingresos.',
+            'Resalta conocimiento en herramientas financieras y regulaciones.'
+        ],
+        finanzas: [
+            'Incluye logros en reducción de costes o aumento de ingresos.',
+            'Resalta conocimiento en herramientas financieras y regulaciones.'
+        ],
+        retail: [
+            'Muestra resultados en mejora de ventas y métricas de conversión.',
+            'Describe experiencia gestionando objetivos de inventario y equipos.'
+        ],
+        // Spanish aliases
+        software: [
+            'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
+            'Muestra logros cuantificables: proyectos con métricas y resultados.'
+        ],
+        tecnologia: [
+            'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
+            'Muestra logros cuantificables: proyectos con métricas y resultados.'
+        ],
+        salud: [
+            'Resalta experiencia en protocolos y certificaciones relevantes.',
+            'Incluye resultados medibles como mejoras en KPIs de salud.'
+        ],
+        educacion: [
+            'Menciona experiencia en diseño curricular y resultados de aprendizaje.',
+            'Incluye acciones concretas: número de estudiantes, cursos impartidos.'
+        ],
+        administracion: [
+            'Destaca experiencia en gestión de equipos y procesos administrativos.',
+            'Incluye logros en optimización de procesos o reducción de costes.'
+        ],
+        administraciOn: [
+            // fallback in case of accented capital O in some inputs
+            'Destaca experiencia en gestión de equipos y procesos administrativos.',
+            'Incluye logros en optimización de procesos o reducción de costes.'
+        ]
+    };
+
+    // note: sector selection modal was removed; tips are generated from profile sectors
+
+    const handleBuyCV = async () => {
+        // Intentar localizar la recompensa CV en las categorías y usar el endpoint real
+        if (!usuarioActual || !usuarioActual.id) {
+            setMensaje({ tipo: 'error', texto: 'Necesitas iniciar sesión para comprar.' });
+            setTimeout(() => setMensaje(null), 3000);
+            return;
+        }
+
+        const flatRewards = categorias.flatMap(c => (c.recompensas || []));
+        const cvReward = flatRewards.find(r => r.nombre && r.nombre.toLowerCase().includes('hoja de vida')) || flatRewards.find(r => r.nombre && r.nombre.toLowerCase().includes('cv'));
+
+        if (!cvReward) {
+            // Si no existe la recompensa en el backend, informar
+            setMensaje({ tipo: 'error', texto: 'La recompensa CV no está disponible en el servidor. Contacta al administrador.' });
+            setTimeout(() => setMensaje(null), 3000);
+            return;
+        }
+
+        setMensaje({ tipo: 'info', texto: 'Procesando compra...' });
+        try {
+            const compraRes = await comprarRecompensa(cvReward.id);
+            if (compraRes && compraRes.success) {
+                // compraRes.compra_id contiene el id real en BD
+                setPendingPurchaseId(compraRes.compra_id || null);
+                setMensaje({ tipo: 'success', texto: 'Compra realizada. Ve a Mis Compras para subir tu CV.' });
+                // Mostrar historial para que el usuario suba el CV
+                setVistaActual('historial');
+            } else {
+                setMensaje({ tipo: 'error', texto: 'No se pudo completar la compra.' });
+            }
+        } catch (err) {
+            console.error('Error en compra CV:', err);
+            setMensaje({ tipo: 'error', texto: 'Error procesando la compra' });
+        } finally {
+            setTimeout(() => setMensaje(null), 3000);
+        }
+    };
+
+    const handleBuyTips = async () => {
+        // Similar to CV buy: find reward named 'tips' and call comprarRecompensa
+        if (!usuarioActual || !usuarioActual.id) {
+            setMensaje({ tipo: 'error', texto: 'Necesitas iniciar sesión para comprar.' });
+            setTimeout(() => setMensaje(null), 3000);
+            return;
+        }
+
+        const flatRewards = categorias.flatMap(c => (c.recompensas || []));
+        const tipsReward = flatRewards.find(r => r.nombre && r.nombre.toLowerCase().includes('tips de empleo')) || flatRewards.find(r => r.costo_puntos === 120 && r.nombre && r.nombre.toLowerCase().includes('tips'));
+        if (!tipsReward) {
+            setMensaje({ tipo: 'error', texto: 'La recompensa de tips no está disponible en el servidor.' });
+            setTimeout(() => setMensaje(null), 3000);
+            return;
+        }
+
+        setMensaje({ tipo: 'info', texto: 'Procesando compra...' });
+        try {
+            const compraRes = await comprarRecompensa(tipsReward.id);
+            if (compraRes && compraRes.success) {
+                setPendingPurchaseId(compraRes.compra_id || null);
+                setMensaje({ tipo: 'success', texto: 'Compra realizada. Ve a Mis Compras para reclamar los tips.' });
+                setVistaActual('historial');
+            } else {
+                setMensaje({ tipo: 'error', texto: 'No se pudo completar la compra.' });
+            }
+        } catch (err) {
+            console.error('Error en compra Tips:', err);
+            setMensaje({ tipo: 'error', texto: 'Error procesando la compra' });
+        } finally {
+            setTimeout(() => setMensaje(null), 3000);
+        }
+    };
+
     const comprarRecompensa = async (recompensaId) => {
         if (!usuarioActual || !usuarioActual.id) {
             setMensaje({ tipo: 'error', texto: 'Necesitas iniciar sesión para comprar.' });
@@ -108,6 +278,8 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                 } catch (e) {
                     // no bloquear si falla
                 }
+                // devolver datos completos de la compra para uso posterior
+                return res.data || { success: true };
             } else {
                 setMensaje({ tipo: 'error', texto: 'No se pudo completar la compra.' });
             }
@@ -161,39 +333,19 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
     return (
         <>
             {mostrarPopup && (
-            <div style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100vw',
-                height: '100vh',
-                background: 'rgba(0,0,0,0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 9999
-            }}>
-                <div style={{
-                    background: 'white',
-                    borderRadius: '18px',
-                    padding: '32px 24px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-                    maxWidth: '350px',
-                    textAlign: 'center',
-                    fontSize: '18px',
-                    color: '#222',
-                    fontWeight: 'bold'
-                }}>
-                    <h2 style={{marginBottom: '18px'}}>¡Recomendaciones Magneto!</h2>
-                    <div style={{marginBottom: '12px'}}>Gracias a un asesor de Magneto tienes estas recomendaciones:</div>
-                    <ul style={{textAlign: 'left', fontWeight: 'normal', fontSize: '16px', marginBottom: '18px'}}>
+            <div className="recommendations-overlay">
+                <div className="recommendations-card">
+                    <div className="recommendations-icon">🧲</div>
+                    <h2 className="rec-title">¡Recomendaciones Magneto!</h2>
+                    <div className="rec-subtitle">Gracias a un asesor de Magneto tienes estas recomendaciones:</div>
+                    <ul className="rec-list">
                         {recomendaciones.length === 0 ? (
                             <li>¡Todo está perfecto en tu perfil!</li>
                         ) : (
                             recomendaciones.map((r, i) => <li key={i}>{r}</li>)
                         )}
                     </ul>
-                    <button onClick={() => setMostrarPopup(false)} style={{background:'#ef983a',color:'white',border:'none',borderRadius:'8px',padding:'10px 24px',fontWeight:'bold',fontSize:'16px',cursor:'pointer'}}>Cerrar</button>
+                    <button className="rec-close-btn" onClick={() => setMostrarPopup(false)}>Cerrar</button>
                 </div>
             </div>
         )}
@@ -222,21 +374,46 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                             if (!uploadedFile) { setUploadError('Selecciona un archivo PDF antes de continuar'); return; }
                             setProcessingResume(true);
                             // Simular procesamiento y generar recomendaciones
-                            setTimeout(()=>{
-                                const recs = [
-                                    'Incluye un resumen profesional al inicio con tus logros más relevantes.',
-                                    'Usa viñetas para describir logros cuantificables (ej.: "Aumenté ventas 20%" ).',
-                                    'Asegúrate de que tu información de contacto esté actualizada y visible.',
-                                    'Adapta palabras clave al sector/puesto al que aplicas (mira la oferta).',
-                                    'Mantén el diseño limpio: tipografía legible y evita párrafos largos.'
-                                ];
-                                setRecomendaciones(recs);
-                                setMostrarUploadModal(false);
-                                setProcessingResume(false);
-                                setUploadedFile(null);
-                                setUploadError(null);
-                                setMostrarPopup(true);
-                            }, 1600);
+                                setTimeout(async ()=>{
+                                    try {
+                                        // Si existe una compra pendiente en el servidor, subir el PDF
+                                        if (pendingPurchaseId && !String(pendingPurchaseId).startsWith('temp-')) {
+                                            const fd = new FormData();
+                                            fd.append('compra_id', pendingPurchaseId);
+                                            fd.append('cv', uploadedFile);
+                                            const uploadRes = await api.post('/rewards/tienda/upload-cv/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+                                            if (uploadRes && uploadRes.data && uploadRes.data.recomendaciones) {
+                                                setRecomendaciones(uploadRes.data.recomendaciones);
+                                            }
+                                            // refrescar historial y puntos desde servidor
+                                            await cargarDatos();
+                                            setPendingPurchaseId(null);
+                                        } else {
+                                            // Fallback local recommendations when purchase was simulated
+                                            const recs = [
+                                                'Incluye un resumen profesional al inicio con tus logros más relevantes.',
+                                                'Usa viñetas para describir logros cuantificables (ej.: "Aumenté ventas 20%" ).',
+                                                'Asegúrate de que tu información de contacto esté actualizada y visible.',
+                                                'Adapta palabras clave al sector/puesto al que aplicas (mira la oferta).',
+                                                'Mantén el diseño limpio: tipografía legible y evita párrafos largos.'
+                                            ];
+                                            setRecomendaciones(recs);
+                                            if (pendingPurchaseId) {
+                                                setHistorial(prev => (prev || []).map(h => h.id === pendingPurchaseId ? ({ ...h, canjeado: true }) : h));
+                                                setPendingPurchaseId(null);
+                                            }
+                                        }
+                                    } catch (err) {
+                                        console.error('Error subiendo CV al servidor:', err);
+                                        setUploadError('Error subiendo el CV. Intenta de nuevo.');
+                                    } finally {
+                                        setMostrarUploadModal(false);
+                                        setProcessingResume(false);
+                                        setUploadedFile(null);
+                                        setUploadError(null);
+                                        setMostrarPopup(true);
+                                    }
+                                }, 1600);
                         }} style={{background:'#6D28D9', color:'white', border:'none', padding:'10px 14px', borderRadius:8, cursor:'pointer'}} disabled={processingResume}>
                             {processingResume ? 'Procesando...' : 'Continuar'}
                         </button>
@@ -244,6 +421,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                 </div>
             </div>
         )}
+        {/* sector modal removed: tips are generated from saved profile sectors automatically */}
         <div className="tienda-container">
             <div className="header">
                 <button onClick={onVolver} className="btn-back">← Volver</button>
@@ -299,13 +477,22 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
 
             {vistaActual === 'tienda' ? (
                 <div className="products-grid">
+                    {/* Custom reward: Tips por sector */}
+                    <div className="product-card">
+                        <div className="card-icon">💡</div>
+                        <h3>Acceder a tips de empleo</h3>
+                        <p>Obtén tips personalizados por sector según tus intereses registrados en la encuesta.</p>
+                        <button className="buy-btn" onClick={() => handleBuyTips()}>
+                            <span className="diamond"></span> 120 MagnetoPoints
+                        </button>
+                    </div>
                     {/* Custom reward: Recomendaciones CV */}
                     <div className="product-card">
                         <div className="card-icon">📄</div>
                         <h3>Recomendaciones para Hoja de Vida</h3>
                         <p>Sube tu CV en PDF y nuestro asesor te dará recomendaciones prácticas para mejorarlo.</p>
-                        <button className="buy-btn" onClick={() => setMostrarUploadModal(true)}>
-                            <span className="diamond"></span> Subir CV (.pdf)
+                        <button className="buy-btn" onClick={() => handleBuyCV()}>
+                            <span className="diamond"></span> 25 MagnetoPoints
                         </button>
                     </div>
                     {categorias
@@ -344,25 +531,53 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                                     <span className="date">{new Date(compra.fecha_compra).toLocaleDateString()}</span>
                                 </div>
                                 <div className="status">
-                                    {compra.canjeado ? (
-                                        <span style={{color: '#999'}}>✓ Utilizada</span>
+                                    {/* For tips and CV allow access even after canjeado; for other rewards show used mark */}
+                                    {compra.recompensa && compra.recompensa.nombre && compra.recompensa.nombre.toLowerCase().includes('tips') ? (
+                                        <button
+                                            onClick={() => {
+                                                // If not canjeado, generate and mark; if already canjeado, just show existing tips
+                                                openSectorModalForCompra(compra);
+                                            }}
+                                            style={{
+                                                background: '#0ea5a4',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '8px 16px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            {compra.canjeado ? 'Ver tips' : 'Disponible'}
+                                        </button>
+                                    ) : compra.recompensa && compra.recompensa.nombre === 'Recomendaciones para Hoja de Vida' ? (
+                                        <button
+                                            onClick={() => {
+                                                if (!compra.canjeado) {
+                                                    setMostrarUploadModal(true);
+                                                    setPendingPurchaseId(compra.id);
+                                                } else {
+                                                    setMostrarPopup(true);
+                                                }
+                                            }}
+                                            style={{
+                                                background: '#6D28D9',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '6px',
+                                                padding: '8px 16px',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            {compra.canjeado ? 'Ver recomendaciones' : 'Disponible'}
+                                        </button>
                                     ) : (
-                                        compra.recompensa.nombre === 'Mini-tutorial personalizado' ? (
-                                            <button 
-                                                onClick={mostrarRecomendaciones}
-                                                style={{
-                                                    background: '#28a745',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '6px',
-                                                    padding: '8px 16px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '12px',
-                                                    fontWeight: 'bold'
-                                                }}
-                                            >
-                                                 Disponible
-                                            </button>
+                                        // default behavior for other rewards
+                                        compra.canjeado ? (
+                                            <span style={{color: '#999'}}>✓ Utilizada</span>
                                         ) : (
                                             <button 
                                                 onClick={abrirMagneto}
@@ -377,7 +592,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                                                     fontWeight: 'bold'
                                                 }}
                                             >
-                                                 Disponible
+                                                Disponible
                                             </button>
                                         )
                                     )}

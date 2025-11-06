@@ -318,3 +318,102 @@
         padding: 6px 12px;
     }
 }
+
+/* Recomendaciones modal styles */
+.recommendations-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 20% 10%, rgba(109,40,217,0.12), rgba(13,12,25,0.72));
+    z-index: 9999;
+    padding: 24px;
+}
+
+.recommendations-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 30px 28px 22px 28px;
+    box-shadow: 0 25px 60px rgba(6,6,23,0.5);
+    max-width: 640px;
+    width: 100%;
+    text-align: center;
+    color: #222;
+    position: relative;
+}
+
+.recommendations-icon {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #f6f7ff 0%, #eef2ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -56px auto 12px auto;
+    font-size: 28px;
+    box-shadow: 0 8px 28px rgba(109,40,217,0.14);
+    border: 6px solid rgba(117,91,255,0.06);
+}
+
+.rec-title {
+    margin: 8px 0 6px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #2b2b2b;
+}
+
+.rec-subtitle {
+    color: #6b6b75;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.rec-list {
+    list-style: none;
+    padding: 0 12px;
+    margin: 0 0 18px 0;
+}
+
+.rec-list li {
+    text-align: left;
+    padding: 12px 0;
+    color: #333333;
+    font-size: 15px;
+    line-height: 1.5;
+    border-bottom: 1px solid #f2f4f8;
+    position: relative;
+    padding-left: 28px;
+}
+
+.rec-list li::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    background: #6d28d9;
+    border-radius: 50%;
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.rec-close-btn {
+    background: #6d28d9;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 12px 36px rgba(109,40,217,0.18);
+}
+
+.rec-close-btn:hover {
+    transform: translateY(-2px);
+}
