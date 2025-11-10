@@ -27,10 +27,8 @@ const RuletaDiaria = ({ usuarioActual }) => {
             ]);
 
             let premios = premiosData.premios || [];
-            // Aumentar la probabilidad de +80 puntos duplicando el premio
             const premios80 = premios.filter(p => p.valor === 80);
             if (premios80.length > 0) {
-                // Duplicar el premio de 80 puntos 2 veces más (total 3)
                 premios = [
                     ...premios,
                     ...premios80,
@@ -70,7 +68,6 @@ const RuletaDiaria = ({ usuarioActual }) => {
                 setMustStartSpinning(true);
             }
         } catch (error) {
-            // Manejo específico cuando ya giró hoy o 405/400
             try {
                 const parsed = await error.response?.json?.();
                 const msg = parsed?.mensaje || 'Ya giraste hoy. Debes esperar hasta mañana para volver a girar.';
@@ -85,7 +82,6 @@ const RuletaDiaria = ({ usuarioActual }) => {
 
     const alFinalizarGiro = () => {
         setMustStartSpinning(false);
-        // Si el premio es Invita-gana, mostrar popup especial
         if (premioGanado && premioGanado.nombre === 'Invita-gana') {
             setMostrarInvitaPopup(true);
         } else {
@@ -152,7 +148,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
                     </div>
                 )}
 
-            {/* Popup especial para Invita-gana */}
+           
             {mostrarInvitaPopup && (
                 <div className="premio-popup">
                     <div className="premio-popup-content">
@@ -167,7 +163,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
                     </div>
                 </div>
             )}
-            {/* Popup de recompensa final para Invita-gana */}
+           
             {mostrarRecompensaPopup && (
                 <div className="premio-popup">
                     <div className="premio-popup-content">
@@ -198,7 +194,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
                         </div>
                         <button onClick={() => {
                             setMostrarPremio(false);
-                            // Sumar puntos solo si el premio es +80
+                           
                             if (premioGanado.valor === 80 && usuarioActual) {
                                 const nuevosPuntos = (usuarioActual.puntos_totales || 0) + 80;
                                 const usuarioActualizado = { ...usuarioActual, puntos_totales: nuevosPuntos };

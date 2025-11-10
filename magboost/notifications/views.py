@@ -111,7 +111,6 @@ def verificar_misiones(request, usuario_id: int):
 	hay_pendientes = pendientes.exists()
 
 	if hay_pendientes:
-		# Solo 1 recordatorio sin leer a la vez. Si ya existe sin leer, no crear otro.
 		Notificacion.objects.get_or_create(
 			usuario=user,
 			tipo="mision_pendiente",
@@ -123,7 +122,6 @@ def verificar_misiones(request, usuario_id: int):
 			}
 		)
 	else:
-		# Solo 1 notificación 'completadas' sin leer a la vez.
 		Notificacion.objects.get_or_create(
 			usuario=user,
 			tipo="misiones_completadas",
@@ -155,7 +153,7 @@ def tips_perfil(request, usuario_id: int):
 	except Exception:
 		perfil = user  # Fallback: el user es PerfilUsuario
 
-	# Heurísticas simples
+
 	if allow_bio_tip and (not getattr(perfil, 'bio', None) or len(getattr(perfil, 'bio', '') or '') < 30):
 		tips.append({
 			"titulo": "Mejora tu biografía en Magneto",
@@ -175,7 +173,7 @@ def tips_perfil(request, usuario_id: int):
 			"mensaje": "Define con claridad el tipo de rol y sector que buscas para mejorar la coincidencia con vacantes.",
 		})
 
-	# Si no hay heurísticas aplicables, genera al menos un tip genérico
+	
 	if not tips:
 		tips.append({
 			"titulo": "Consejo rápido para tu perfil",

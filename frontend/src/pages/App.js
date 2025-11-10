@@ -28,17 +28,17 @@ function App() {
         if (usuarioGuardado) {
           const parsed = JSON.parse(usuarioGuardado);
           setUsuarioActual(parsed);
-          // Fuerza sincronización con servidor: si hay id, pedir perfil actualizado y sobrescribir localStorage
+         
           if (parsed?.id) {
             try {
-              // Intentar endpoint autenticado primero
+             
               const resp = await usuariosAPI.detalle(parsed.id);
               if (resp && resp.data) {
                 setUsuarioActual(resp.data);
                 try { localStorage.setItem('usuario', JSON.stringify(resp.data)); } catch(_) {}
               }
             } catch (e) {
-              // Fallback a perfil_completo público
+             
               try {
                 const fallback = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${parsed.id}`);
                 if (fallback.ok) {
@@ -49,7 +49,7 @@ function App() {
                   }
                 }
               } catch (_e) {
-                // Si falla el fallback, no hacemos nada más
+               
               }
             }
           }
@@ -72,7 +72,7 @@ function App() {
           const res = await usuariosAPI.detalle(usuarioActual.id);
           setUsuarioActual(res.data);
         } catch (error) {
-          // Si falla (ej. token faltante), intentar fallback a perfil_completo público
+         
           try {
             const resp = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${usuarioActual.id}`);
             if (resp.ok) {
@@ -83,7 +83,7 @@ function App() {
               }
             }
           } catch (e) {
-            // mantener usuario actual si todo falla
+          
           }
         }
       };
@@ -96,7 +96,7 @@ function App() {
     setVistaActual(vista);
   };
 
-  // Al volver a Home después de visitar Perfil, disparar tip BIO
+ 
   useEffect(() => {
     if (vistaActual !== 'home') return;
     if (!usuarioActual?.id) return;
@@ -119,7 +119,7 @@ function App() {
 
   return (
     <div style={{minHeight: '100vh', background: '#f5f5f5', paddingBottom: '80px'}}>
-      {/* Contenido según la vista */}
+     
       {vistaActual === 'home' && (
         <div>
           <UserHeader usuarioActual={usuarioActual} />
@@ -157,7 +157,7 @@ function App() {
         <RankingPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
-      {/* Botón flotante Magneto - Global */}
+      
       <div 
         onClick={() => window.open('https://www.magneto365.com/es', '_blank')}
         style={{
@@ -183,7 +183,7 @@ function App() {
         m
       </div>
 
-      {/* Navegación inferior fija - Mejorada */}
+     
       <nav style={{
         position: 'fixed',
         bottom: 0,
@@ -262,8 +262,6 @@ function App() {
           <span style={{fontSize: '20px'}}>🛍️</span>
           Tienda
         </button>
-        {/* Vacantes ahora en AccesoRapido */}
-        {/* Ranking button removed from bottom nav; access via AccesoRapido */}
         <button 
           onClick={() => cambiarVista('perfil')}
           style={{

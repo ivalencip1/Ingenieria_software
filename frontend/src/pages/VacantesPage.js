@@ -68,8 +68,7 @@ function VacantesPage({ onVolver, usuarioActual }) {
     const cargar = async () => {
       setLoading(true);
       try {
-        // `usuarioActual.sectors` puede venir como lista de strings (['Tecnología'])
-        // o como lista de objetos [{name:'Tecnología',...}]. Normalizamos a strings.
+       
         const sectorsArr = (usuarioActual && usuarioActual.sectors) ? usuarioActual.sectors.map(s => (typeof s === 'string' ? s : (s.name || ''))).filter(Boolean) : [];
         const sectors = sectorsArr.join(',');
         const res = await vacantesAPI.listar(sectors);
