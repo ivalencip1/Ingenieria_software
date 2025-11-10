@@ -1,0 +1,31 @@
+# .gitignore
+
+# -----------------
+# 1. Variables de Entorno (Clave API)
+# ESTO ES CRÍTICO: Ignora el archivo que contiene tu clave de Gemini.
+.env
+
+# -----------------
+# 2. Migraciones
+# Esto suele aplicar a frameworks como Django, Flask-Migrate (Alembic), o Sequelize.
+# Si estás usando Python y un framework web, descomenta las líneas que apliquen.
+
+# Si usas Django/Flask (la carpeta donde se guardan los archivos de migración)
+*/migrations
+# O si solo son archivos .py que contienen 'migration' en el nombre
+*_migration.py
+
+# Si usas Node.js (carpeta 'node_modules' que no debe subirse)
+node_modules
+
+# -----------------
+# 3. Archivos de Python y Windows
+# Ignora archivos de compilación, caché y temporales
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyd
+
+# Archivos de Windows generados
+Thumbs.db
