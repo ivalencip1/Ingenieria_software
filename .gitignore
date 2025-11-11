@@ -4,6 +4,7 @@
 # 1. Variables de Entorno (Clave API)
 # ESTO ES CRÍTICO: Ignora el archivo que contiene tu clave de Gemini.
 .env
+api.env
 
 # -----------------
 # 2. Migraciones
