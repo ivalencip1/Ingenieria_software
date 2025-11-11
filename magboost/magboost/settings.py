@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'core',
     'gamification',
     'magnetosimulator',
+    'minigame',
     'notifications',
     'rewards',
     'social',

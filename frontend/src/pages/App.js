@@ -11,6 +11,7 @@ import Perfil from './Perfil';
 import RuletaPage from './RuletaPage';
 import RankingPage from './RankingPage';
 import VacantesPage from './VacantesPage';
+import MinigamePage from './MinigamePage';
 import './App.css';
 
 function App() {
@@ -118,7 +119,7 @@ function App() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div style={{minHeight: '100vh', background: '#f5f5f5', paddingBottom: '80px'}}>
+    <div style={{minHeight: '100vh', background: '#FFFFFF', paddingBottom: '80px'}}>
      
       {vistaActual === 'home' && (
         <div>
@@ -157,16 +158,20 @@ function App() {
         <RankingPage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
       )}
 
-      
+      {vistaActual === 'minigame' && (
+        <MinigamePage onVolver={() => setVistaActual('home')} usuarioActual={usuarioActual} />
+      )}
+
+      {/* Botón flotante para Minijuego */}
       <div 
-        onClick={() => window.open('https://www.magneto365.com/es', '_blank')}
+        onClick={() => cambiarVista('minigame')}
         style={{
           position: 'fixed',
           bottom: '90px',
           right: '20px',
           width: '60px',
           height: '60px',
-          background: '#28a745',
+          background: 'linear-gradient(135deg, #7c00ff 0%, #9548ff 100%)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -177,7 +182,8 @@ function App() {
           fontWeight: 'bold',
           zIndex: 1000,
           textAlign: 'center',
-          lineHeight: '60px'
+          lineHeight: '60px',
+          boxShadow: '0 4px 15px rgba(124, 0, 255, 0.3)'
         }}
       >
         m
@@ -201,7 +207,7 @@ function App() {
           style={{
             padding: '8px 12px',
             background: 'transparent',
-            color: vistaActual === 'home' ? '#667eea' : '#666',
+            color: vistaActual === 'home' ? '#334960' : '#667688',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
@@ -223,7 +229,7 @@ function App() {
           style={{
             padding: '8px 12px',
             background: 'transparent',
-            color: vistaActual === 'misiones' ? '#667eea' : '#666',
+            color: vistaActual === 'misiones' ? '#0cbb4e' : '#667688',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
@@ -245,7 +251,7 @@ function App() {
           style={{
             padding: '8px 12px',
             background: 'transparent',
-            color: vistaActual === 'tienda' ? '#667eea' : '#666',
+            color: vistaActual === 'tienda' ? '#70ECD4' : '#667688',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',
@@ -263,11 +269,33 @@ function App() {
           Tienda
         </button>
         <button 
+          onClick={() => cambiarVista('minigame')}
+          style={{
+            padding: '8px 12px',
+            background: 'transparent',
+            color: vistaActual === 'minigame' ? '#7c00ff' : '#667688',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '12px',
+            fontWeight: vistaActual === 'minigame' ? '600' : '400',
+            minWidth: '60px',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          <span style={{fontSize: '20px'}}>🎮</span>
+          Juego
+        </button>
+        <button 
           onClick={() => cambiarVista('perfil')}
           style={{
             padding: '8px 12px',
             background: 'transparent',
-            color: vistaActual === 'perfil' ? '#667eea' : '#666',
+            color: vistaActual === 'perfil' ? '#22D3B7' : '#667688',
             border: 'none',
             borderRadius: '8px',
             cursor: 'pointer',

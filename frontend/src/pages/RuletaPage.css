@@ -1,6 +1,6 @@
 .ruleta-page-simple {
     min-height: 100vh;
-    background: #f5f5f5;
+    background: linear-gradient(135deg, rgba(112, 236, 212, 0.15) 0%, rgba(163, 217, 234, 0.15) 100%);
     padding: 20px;
     text-align: center;
 }
@@ -8,12 +8,13 @@
 .ruleta-page-simple h1 {
     font-size: 2.5em;
     margin: 20px 0 10px 0;
-    color: #333;
+    color: #334960;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ruleta-page-simple p {
     font-size: 1.1em;
-    color: #666;
+    color: #001B38;
     margin-bottom: 30px;
 }
 

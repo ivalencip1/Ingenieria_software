@@ -48,8 +48,8 @@ const RuletaDiaria = ({ usuarioActual }) => {
 
     const obtenerColorPremio = (index) => {
         const colores = [
-            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
-            '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'
+            '#0cbb4e', '#5DC971', '#66c695', '#FAAD14', 
+            '#FCC75D', '#7c00ff', '#9548ff', '#70ECD4'
         ];
         return colores[index % colores.length];
     };
@@ -100,7 +100,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
         option: premio.nombre,
         style: { 
             backgroundColor: obtenerColorPremio(index),
-            textColor: '#000000',
+            textColor: '#FFFFFF',
             fontSize: 18,
             fontWeight: 'bold'
         }
@@ -116,14 +116,14 @@ const RuletaDiaria = ({ usuarioActual }) => {
                     prizeNumber={prizeNumber}
                     data={data}
                     onStopSpinning={alFinalizarGiro}
-                    backgroundColors={['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F']}
-                    textColors={['#000000']}
-                    outerBorderColor={'#FFD700'}
+                    backgroundColors={['#0cbb4e', '#5DC971', '#66c695', '#FAAD14', '#FCC75D', '#7c00ff']}
+                    textColors={['#FFFFFF']}
+                    outerBorderColor={'#334960'}
                     outerBorderWidth={8}
                     innerRadius={28}
-                    innerBorderColor={'#FFD700'}
+                    innerBorderColor={'#334960'}
                     innerBorderWidth={5}
-                    radiusLineColor={'#FFD700'}
+                    radiusLineColor={'#334960'}
                     radiusLineWidth={2}
                     fontSize={18}
                     textDistance={55}
@@ -143,7 +143,7 @@ const RuletaDiaria = ({ usuarioActual }) => {
 
                 {/* Mensaje si no va a girar*/}
                 {!puedeGirar && mensaje && (
-                    <div className="mensaje-ruleta" style={{ color: '#FF6B6B', marginTop: '10px' }}>
+                    <div className="mensaje-ruleta" style={{ color: '#7c00ff', marginTop: '10px', fontWeight: '500' }}>
                         {mensaje}
                     </div>
                 )}

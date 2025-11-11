@@ -251,3 +251,45 @@ def save_survey(request):
         }, status=200)
     except Exception as e:
         return Response({'error': f'Error al guardar encuesta: {str(e)}'}, status=500)
+
+@api_view(['POST'])
+def sumar_puntos(request):
+    """
+    Suma puntos Magneto al usuario después del minijuego
+    """
+    try:
+        import json
+        from django.views.decorators.csrf import csrf_exempt
+        
+        # Obtener datos del request
+        user_id = request.data.get('user_id')
+        puntos = request.data.get('puntos', 0)
+        
+        if not user_id:
+            return Response({'error': 'ID de usuario requerido'}, status=400)
+        
+        if puntos < 0:
+            return Response({'error': 'Los puntos no pueden ser negativos'}, status=400)
+        
+        # Buscar el usuario
+        try:
+            usuario = PerfilUsuario.objects.get(id=user_id)
+        except PerfilUsuario.DoesNotExist:
+            return Response({'error': 'Usuario no encontrado'}, status=404)
+        
+        # Sumar puntos
+        puntos_anteriores = usuario.puntos_totales or 0
+        usuario.puntos_totales = puntos_anteriores + puntos
+        usuario.save()
+        
+        return Response({
+            'success': True,
+            'message': f'Se sumaron {puntos} Magneto Points correctamente',
+            'puntos_anteriores': puntos_anteriores,
+            'puntos_nuevos': puntos,
+            'puntos_totales': usuario.puntos_totales,
+            'usuario': usuario.username
+        }, status=200)
+        
+    except Exception as e:
+        return Response({'error': f'Error al sumar puntos: {str(e)}'}, status=500)

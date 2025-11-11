@@ -2,7 +2,7 @@
 
 /* Página principal */
 .misiones-page {
-  background: linear-gradient(135deg, #FFA726 0%, #FFB74D 100%);
+  background: linear-gradient(135deg, #334960 0%, #001B38 100%);
   min-height: 100vh;
   padding: 20px;
   padding-bottom: 100px; /* Espacio para navegación inferior */
@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 30px;
-  color: #8B4513;
+  color: #FFFFFF;
 }
 
 .misiones-back-btn {
@@ -22,7 +22,7 @@
   font-size: 24px;
   cursor: pointer;
   margin-right: 15px;
-  color: #8B4513;
+  color: #FFFFFF;
 }
 
 
@@ -37,7 +37,7 @@
 }
 
 .misiones-section-title {
-  color: #8B4513;
+  color: #FFFFFF;
   margin-bottom: 15px;
 }
 
@@ -51,6 +51,7 @@
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 2px solid #A3D9EA;
 }
 
 .mision-info {
@@ -59,7 +60,7 @@
 
 .mision-titulo {
   margin: 0 0 11px 0;
-  color: #8B4513;
+  color: #334960;
 }
 
 .mision-detalles {
@@ -74,7 +75,7 @@
 
 .mision-puntos {
   font-weight: bold;
-  color: #8B4513;
+  color: #0cbb4e;
   font-size: 12px;
 }
 
@@ -93,36 +94,37 @@
 }
 
 .mision-estado.completada {
-  background: #4CAF50;
+  background: #0cbb4e;
 }
 
 .mision-estado.pendiente {
-  background: #FF9800;
+  background: #7c00ff;
 }
 
 .mision-btn-completar {
-  background: #FF6B35;
+  background: #FAAD14;
   color: white;
   border: none;
   padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
+  font-weight: bold;
 }
 
 .mision-btn-completar:hover {
-  background: #e55a2b;
+  background: #FCC75D;
 }
 
 .mision-estado.completada {
-  background: #4CAF50;
+  background: #0cbb4e;
 }
 
 .mision-estado.pendiente {
-  background: #FF9800;
+  background: #7c00ff;
 }
 
 .mision-btn-completar:hover {
-  background: #e55a2b;
+  background: #0a9d42;
 }
 
 /* ========== PANTALLA DE CARGA MAGNÉTICA ========== */
@@ -132,47 +134,53 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #FFA726 0%, #FFB74D 100%);
+  background: linear-gradient(135deg, #66C2EA 0%, #0073DA 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  color: #8B4513;
+  color: #FFFFFF;
 }
 
 .misiones-loading-magnet {
   font-size: 80px;
   animation: magneticSpin 2s linear infinite;
   margin-bottom: 30px;
+  filter: drop-shadow(0 0 20px #A3D9EA);
+  text-shadow: 0 0 30px #A3D9EA;
 }
 
 .misiones-loading-title {
   margin: 0 0 15px 0;
   font-size: 32px;
+  text-shadow: 0 0 20px rgba(163, 217, 234, 0.8);
 }
 
 .misiones-loading-subtitle {
   margin: 0 0 30px 0;
   font-size: 18px;
-  opacity: 0.8;
+  opacity: 0.9;
+  text-shadow: 0 0 15px rgba(163, 217, 234, 0.6);
 }
 
 .misiones-loading-bar-container {
   width: 300px;
   height: 8px;
-  background: rgba(139, 69, 19, 0.3);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(163, 217, 234, 0.5);
 }
 
 .misiones-loading-bar {
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, #FF6B35, #F7931E);
+  background: linear-gradient(90deg, #A3D9EA, #66C2EA, #0073DA);
   border-radius: 4px;
   animation: loadingBar 3s ease-in-out infinite;
+  box-shadow: 0 0 10px #A3D9EA;
 }
 
 .misiones-loading-dots {
@@ -183,9 +191,10 @@
 .misiones-loading-dot {
   width: 12px;
   height: 12px;
-  background: #FF6B35;
+  background: #A3D9EA;
   border-radius: 50%;
   animation: magneticPulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 8px #A3D9EA;
 }
 
 .misiones-loading-dot:nth-child(2) {
@@ -223,7 +232,7 @@
 .misiones-popup-title {
   margin: 4px 0 8px 0;
   font-size: 20px;
-  color: #8B4513;
+  color: #334960;
 }
 .misiones-popup-desc {
   margin: 0 0 12px 0;
@@ -251,7 +260,7 @@
 }
 .misiones-popup-actions { display:flex; gap:10px; justify-content:center; margin-top:8px; }
 .misiones-popup-cancel { background:transparent; border:1px solid #ccc; padding:8px 14px; border-radius:10px; cursor:pointer; }
-.misiones-popup-accept { background:#ff8c00; color:white; border:none; padding:8px 14px; border-radius:10px; cursor:pointer; }
+.misiones-popup-accept { background:#FAAD14; color:white; border:none; padding:8px 14px; border-radius:10px; cursor:pointer; font-weight:bold; }
 
 /* New invite card styles */
 .misiones-invite-card {
@@ -267,8 +276,8 @@
 }
 .invite-badge {
   display: inline-block;
-  background: #f3e8ff;
-  color: #6b21a8;
+  background: linear-gradient(135deg, #E6F4FE 0%, #A3D9EA 100%);
+  color: #0073DA;
   padding: 8px 20px;
   border-radius: 999px;
   font-weight: 700;
@@ -278,24 +287,24 @@
 .invite-title {
   font-size: 28px;
   margin: 8px 0 12px 0;
-  color: #0f172a;
+  color: #334960;
   font-weight: 800;
 }
 .invite-desc {
-  color: #475569;
+  color: #667688;
   max-width: 760px;
   margin: 0 auto 20px auto;
   font-size: 16px;
 }
 .invite-share-btn {
-  background: #ff6b35;
+  background: linear-gradient(135deg, #FAAD14 0%, #FCC75D 100%);
   color: white;
   border: none;
   padding: 16px 36px;
   border-radius: 14px;
   font-size: 18px;
   font-weight: 800;
-  box-shadow: 0 8px 18px rgba(102,92,231,0.12);
+  box-shadow: 0 8px 18px rgba(250, 173, 20, 0.3);
   cursor: pointer;
 }
 .invite-share-btn:hover { filter: brightness(0.96); }
@@ -305,8 +314,8 @@
   justify-content:center;
   margin-top:18px;
 }
-.invite-bullets .bullet { color:#334155; font-size:14px; display:flex; align-items:center; gap:8px }
-.invite-bullets .dot { width:10px; height:10px; background:#16a34a; border-radius:50%; display:inline-block }
+.invite-bullets .bullet { color:#334960; font-size:14px; display:flex; align-items:center; gap:8px }
+.invite-bullets .dot { width:10px; height:10px; background:#0cbb4e; border-radius:50%; display:inline-block }
 
 
 /* Enhanced loading card */
@@ -316,19 +325,19 @@
   border-radius: 18px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.18);
   text-align:center;
-  color:#8B4513;
+  color:#334960;
 }
 .misiones-loading-progress {
   height: 12px;
   width: 320px;
-  background: rgba(139,69,19,0.12);
+  background: rgba(51,73,96,0.12);
   border-radius: 10px;
   overflow:hidden;
   margin: 18px auto 8px auto;
 }
 .misiones-loading-progress-fill {
   height:100%;
-  background: linear-gradient(90deg,#ff6b35,#f7931e);
+  background: linear-gradient(90deg,#0cbb4e,#5DC971);
   width:0%;
   transition: width 0.5s ease;
 }
@@ -336,9 +345,26 @@
 
 /* ========== ANIMACIONES ========== */
 @keyframes magneticSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(1); }
+  0% { 
+    transform: rotate(0deg) scale(1); 
+    filter: drop-shadow(0 0 20px #A3D9EA);
+  }
+  25% { 
+    transform: rotate(90deg) scale(1.05); 
+    filter: drop-shadow(0 0 25px #66C2EA);
+  }
+  50% { 
+    transform: rotate(180deg) scale(1.1); 
+    filter: drop-shadow(0 0 30px #0073DA);
+  }
+  75% { 
+    transform: rotate(270deg) scale(1.05); 
+    filter: drop-shadow(0 0 25px #66C2EA);
+  }
+  100% { 
+    transform: rotate(360deg) scale(1); 
+    filter: drop-shadow(0 0 20px #A3D9EA);
+  }
 }
 
 @keyframes loadingBar {
@@ -351,9 +377,23 @@
   0%, 80%, 100% { 
     transform: scale(0); 
     opacity: 1; 
+    box-shadow: 0 0 8px #A3D9EA;
   }
   40% { 
     transform: scale(1); 
     opacity: 0; 
+    box-shadow: 0 0 15px #66C2EA;
+  }
+}
+
+@keyframes bluePulse {
+  0% { 
+    box-shadow: 0 0 20px rgba(163, 217, 234, 0.4);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(102, 194, 234, 0.6);
+  }
+  100% { 
+    box-shadow: 0 0 20px rgba(163, 217, 234, 0.4);
   }
 }

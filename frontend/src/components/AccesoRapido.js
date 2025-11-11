@@ -28,9 +28,9 @@ function AccesoRapido({ onCambiarVista }) {
   };
 
   const botones = [
-    {titulo: 'Vacantes recomendadas', icono: '✅', color: '#FFB74D', onClick: () => onCambiarVista && onCambiarVista('vacantes')},
-    {titulo: 'Ruleta diaria', icono: '🎯', color: '#4DB6AC', onClick: manejarRuleta},
-    {titulo: 'Ranking de usuarios', icono: '⭐', color: '#42A5F5', onClick: () => onCambiarVista('ranking')}
+    {titulo: 'Vacantes recomendadas', icono: '✅', color: '#0cbb4e', onClick: () => onCambiarVista && onCambiarVista('vacantes')},
+    {titulo: 'Ruleta diaria', icono: '🎯', color: '#70ECD4', onClick: manejarRuleta},
+    {titulo: 'Ranking de usuarios', icono: '⭐', color: '#7c00ff', onClick: () => onCambiarVista('ranking')}
   ];
 
   return (

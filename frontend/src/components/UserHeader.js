@@ -7,7 +7,7 @@ function UserHeader({ usuarioActual }) {
 
   return (
     <header style={{
-      background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      background: "linear-gradient(135deg, #334960 0%, #001B38 100%)",
       color: "white",
       padding: "40px 20px",
       borderRadius: "0",
@@ -26,7 +26,7 @@ function UserHeader({ usuarioActual }) {
       </div>
       <div style={{display: "flex", alignItems: "center", gap: "15px"}}>
         <div style={{
-          background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)",
+          background: "linear-gradient(135deg, #0cbb4e 0%, #5DC971 100%)",
           padding: "8px 15px",
           borderRadius: "8px",
           display: "flex",
@@ -42,7 +42,7 @@ function UserHeader({ usuarioActual }) {
           width: "50px",
           height: "50px",
           borderRadius: "50%",
-          background: "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)",
+          background: "linear-gradient(135deg, #7c00ff 0%, #9548ff 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

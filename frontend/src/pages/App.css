@@ -10,6 +10,7 @@
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 2px solid #70ECD4;
 }
 
 .progreso-header {
@@ -19,18 +20,18 @@
 
 .progreso-title {
   margin: 0 0 5px 0;
-  color: #333;
+  color: #334960;
 }
 
 .progreso-stats {
   font-size: 18px;
   font-weight: bold;
-  color: #FF6B35;
+  color: #0cbb4e;
 }
 
 .progreso-racha {
   margin-left: 10px;
-  background: #FF6B35;
+  background: #7c00ff;
   color: white;
   padding: 2px 8px;
   border-radius: 10px;
@@ -50,13 +51,13 @@
   height: 25px;
   background: #f0f0f0;
   border-radius: 12px;
-  border: 2px solid #d4af37;
+  border: 2px solid #70ECD4;
   overflow: hidden;
 }
 
 .progreso-barra-fill {
   height: 100%;
-  background: linear-gradient(45deg, #FFD700, #FF6B35);
+  background: linear-gradient(45deg, #0cbb4e, #5DC971);
   border-radius: 10px;
   transition: width 0.5s ease-in-out;
 }
@@ -70,29 +71,37 @@
   color: #666;
   padding: 12px;
   text-align: center;
-  font-size: 14px;
-  font-weight: 400;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .progreso-porcentaje {
   text-align: center;
   margin-top: 10px;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: bold;
 }
 
 .progreso-porcentaje.completo {
-  color: #4CAF50;
+  color: #0cbb4e;
 }
 
 .progreso-porcentaje.incompleto {
-  color: #FF6B35;
+  color: #7c00ff;
 }
 
 /* ========== RETOS DEL DÍA ========== */
+.retos-container {
+  margin: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f1fbf4 0%, #e6f7ea 100%);
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(12, 187, 78, 0.2);
+}
+
 .retos-container h3 {
   margin-bottom: 15px;
-  color: #333;
+  color: #334960;
 }
 
 .retos-mision {
@@ -108,7 +117,7 @@
 }
 
 .retos-btn {
-  background: #FF6B35;
+  background: #0cbb4e;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -119,7 +128,7 @@
 }
 
 .retos-btn:hover {
-  background: #e55a2b;
+  background: #0a9d42;
 }
 
 .retos-btn:disabled {
@@ -167,7 +176,7 @@
 .loading-dot {
   width: 10px;
   height: 10px;
-  background: #FF6B35;
+  background: #70ECD4;
   border-radius: 50%;
   animation: pulse 1.5s ease-in-out infinite;
 }

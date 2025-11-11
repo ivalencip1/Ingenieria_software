@@ -47,17 +47,23 @@
   margin-top: 12px;
 }
 .editar-nombres-save {
-  background: #667eea;
+  background: linear-gradient(135deg, #FAAD14 0%, #FCC75D 100%);
   color: #fff;
   border: none;
   border-radius: 10px;
   padding: 10px 16px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(250, 173, 20, 0.3);
 }
 .editar-nombres-save[disabled] {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.editar-nombres-save:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.4);
 }
 .editar-nombres-msg {
   font-size: 13px;
@@ -80,14 +86,14 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #FFFAEF 0%, #FEF7E8 100%);
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
 }
 
 
 .perfil-header {
-  background: linear-gradient(135deg, #ff6b35 0%, #ff8c00 50%, #ffa500 100%);
+  background: linear-gradient(135deg, #FAAD14 0%, #FCC75D 50%, #FDE0A6 100%);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 20px;
@@ -179,20 +185,30 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.5);
-  background: rgba(255,255,255,0.18);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 2px solid #667688;
+  background: rgba(102, 118, 136, 0.85);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 118, 136, 0.3);
 }
 .perfil-edit-btn:hover {
-  background: rgba(255,255,255,0.26);
+  background: rgba(102, 118, 136, 1);
+  border-color: #334960;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 118, 136, 0.4);
+}
+.perfil-edit-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2.5;
 }
 
 
@@ -211,6 +227,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  border-bottom: 2px solid #FDE0A6;
+  padding-bottom: 8px;
 }
 
 .biografia-texto {
@@ -233,6 +251,8 @@
   margin: 0 0 16px 0;
   font-size: 18px;
   color: #2d3748;
+  border-bottom: 2px solid #FDE0A6;
+  padding-bottom: 8px;
 }
 
 .progreso-bar-container {
@@ -247,11 +267,12 @@
   background: #e2e8f0;
   border-radius: 6px;
   overflow: hidden;
+  border: 1px solid rgba(250, 173, 20, 0.2);
 }
 
 .progreso-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ff8c00, #ff6b35);
+  background: linear-gradient(90deg, #FAAD14, #FCC75D);
   border-radius: 6px;
   transition: width 0.3s ease;
 }
@@ -366,7 +387,7 @@
 
 .mision-puntos {
   font-weight: bold;
-  color: #8B4513;
+  color: #FAAD14;
   font-size: 12px;
 }
 
@@ -399,6 +420,8 @@
   font-size: 18px;
   color: #2d3748;
   text-align: center;
+  border-bottom: 2px solid #FDE0A6;
+  padding-bottom: 8px;
 }
 
 .insignias-horizontal {
@@ -425,8 +448,8 @@
 
 .insignia-simple:hover {
   transform: scale(1.1);
-  border-color: #667eea;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  border-color: #FAAD14;
+  box-shadow: 0 6px 20px rgba(250, 173, 20, 0.4);
 }
 
 .insignia-simple img {
@@ -475,12 +498,19 @@
 }
 
 .insignia-modal-close {
-  background: #667eea;
+  background: linear-gradient(135deg, #FAAD14 0%, #FCC75D 100%);
   color: white;
   border: none;
   border-radius: 8px;
   padding: 10px 16px;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(250, 173, 20, 0.3);
+  transition: all 0.2s ease;
+}
+
+.insignia-modal-close:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(250, 173, 20, 0.4);
 }
 
 .no-insignias {
@@ -508,7 +538,7 @@
   width: 40px;
   height: 40px;
   border: 4px solid #e2e8f0;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid #FAAD14;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 16px;
