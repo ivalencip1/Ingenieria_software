@@ -111,6 +111,7 @@ def verificar_misiones(request, usuario_id: int):
 	hay_pendientes = pendientes.exists()
 
 	if hay_pendientes:
+
 		Notificacion.objects.get_or_create(
 			usuario=user,
 			tipo="mision_pendiente",

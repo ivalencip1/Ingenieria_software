@@ -10,7 +10,7 @@ export default function NotificacionesBell({ usuarioId }) {
   useEffect(() => {
     if (!usuarioId) return;
 
-    // Primero intenta crear/actualizar notifs, luego recarga lista
+   
     Promise.all([
       fetch(`http://localhost:8000/api/notifications/usuario/${usuarioId}/bienvenida/`, { method: "POST" }).catch(()=>{}),
       fetch(`http://localhost:8000/api/notifications/usuario/${usuarioId}/verificar-misiones/`, { method: "POST" }).catch(()=>{}),
@@ -20,7 +20,7 @@ export default function NotificacionesBell({ usuarioId }) {
 
     const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
     document.addEventListener("click", onDoc);
-    // Escuchar eventos globales para refrescar desde otras páginas (p.ej., Misiones)
+  
     const onRefresh = () => cargar();
     window.addEventListener('magboost:new-notifications', onRefresh);
     return () => {
@@ -47,7 +47,7 @@ export default function NotificacionesBell({ usuarioId }) {
     try{
       const res = await fetch(`http://localhost:8000/api/notifications/usuario/${usuarioId}/marcar-todas-leidas/`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      // Optimistic UI: marcar todas como leídas y resetear badge
+      
       setList((xs)=>xs.map(n=>({...n, leida:true})));
       setNoLeidas(0);
     }catch(err){
@@ -59,7 +59,7 @@ export default function NotificacionesBell({ usuarioId }) {
 
   async function marcarUna(notif){
     if (!notif || notif.leida) return;
-    // Optimistic UI
+
     const prevList = list;
     const prevNoLeidas = noLeidas;
     setList((xs)=>xs.map(n=> n.id===notif.id ? ({...n, leida:true}) : n));
@@ -68,7 +68,7 @@ export default function NotificacionesBell({ usuarioId }) {
       const res = await fetch(`http://localhost:8000/api/notifications/notificacion/${notif.id}/marcar-leida/`, { method: "POST" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
     }catch(err){
-      // Revert on failure
+      
       console.warn("No se pudo marcar la notificación:", err?.message || err);
       setList(prevList);
       setNoLeidas(prevNoLeidas);
@@ -76,7 +76,7 @@ export default function NotificacionesBell({ usuarioId }) {
   }
 
   return (
-    // Contenedor embebido en el header (no fijo). Sirve de ancla del panel.
+    
     <div ref={ref} style={{ position: "relative" }}>
       <button onClick={()=>{ setOpen(v=>!v); if(!open) cargar(); }}
         aria-label="Notificaciones" style={{ width:50, height:50, borderRadius:999, border:"1px solid rgba(255,255,255,.5)", background:"rgba(255,255,255,0.15)", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", position:"relative", backdropFilter:"blur(2px)" }}>
@@ -101,7 +101,7 @@ export default function NotificacionesBell({ usuarioId }) {
             {list.filter(n=>!n.leida).length===0 ? (
               <div style={{ padding:16, color:"#555" }}>No tienes notificaciones</div>
             ) : (
-              // Mostrar solo las no leídas (máximo 5). Destacar 'tip_perfil'.
+             
               list.filter(n=>!n.leida).slice(0,5).map(n=> {
                 const isTip = n.tipo === 'tip_perfil';
                 return (

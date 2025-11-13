@@ -17,10 +17,10 @@ function UserHeader({ usuarioActual }) {
       boxShadow: "0 4px 20px rgba(0,0,0,0.15)"
     }}>
       <div>
-        <h1 style={{margin: "0 0 5px 0", fontSize: "22px", fontWeight: "bold"}}>
+        <h1 style={{margin: "0 0 5px 0", fontSize: "22px", fontWeight: "700", color: "#ffffff"}}>
           ¡Hola {usuario?.username || "Usuario"}!
         </h1>
-        <p style={{margin: 0, opacity: 0.9, fontSize: "14px"}}>
+        <p style={{margin: 0, opacity: 0.9, fontSize: "14px", color: "rgba(255,255,255,0.9)"}}>
           Bienvenido a MagBoost
         </p>
       </div>

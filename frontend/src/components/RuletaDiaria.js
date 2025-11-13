@@ -15,6 +15,8 @@ const RuletaDiaria = ({ usuarioActual }) => {
     const [cargando, setCargando] = useState(true);
     const [mostrarInvitaPopup, setMostrarInvitaPopup] = useState(false);
     const [mostrarRecompensaPopup, setMostrarRecompensaPopup] = useState(false);
+    const [mostrarTipPopup, setMostrarTipPopup] = useState(false);
+    const [tipText, setTipText] = useState('');
 
 
     // ================= FUNCIONES AUXILIARES =================
@@ -54,6 +56,53 @@ const RuletaDiaria = ({ usuarioActual }) => {
         return colores[index % colores.length];
     };
 
+    const SECTOR_TIPS = {
+        tech: [
+            'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
+            'Muestra logros cuantificables: proyectos con métricas y resultados.'
+        ],
+        health: [
+            'Resalta experiencia en protocolos y certificaciones relevantes.',
+            'Incluye resultados medibles como mejoras en KPIs de salud.'
+        ],
+        education: [
+            'Menciona experiencia en diseño curricular y resultados de aprendizaje.',
+            'Incluye acciones concretas: número de estudiantes, cursos impartidos.'
+        ],
+        finance: [
+            'Incluye logros en reducción de costes o aumento de ingresos.',
+            'Resalta conocimiento en herramientas financieras y regulaciones.'
+        ],
+        retail: [
+            'Muestra resultados en mejora de ventas y métricas de conversión.',
+            'Describe experiencia gestionando objetivos de inventario y equipos.'
+        ],
+        default: [
+            'Actualiza tu perfil y añade logros concretos. Un buen resumen profesional ayuda mucho.',
+            'Usa viñetas para mostrar tus logros y métricas en cada experiencia laboral.'
+        ]
+    };
+
+    const generarTipParaUsuario = async () => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${usuarioActual?.id}`);
+            if (!res.ok) throw new Error('No profile');
+            const data = await res.json();
+            const sectors = (data.perfil && data.perfil.sectors) ? data.perfil.sectors : [];
+                const normalize = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            const tips = [];
+            (sectors.length ? sectors : []).forEach(s => {
+                const key = normalize(s);
+                if (SECTOR_TIPS[key]) tips.push(...SECTOR_TIPS[key]);
+            });
+            if (tips.length > 0) return tips[Math.floor(Math.random() * tips.length)];
+        } catch (err) {
+            // fall through to default
+        }
+        const defs = SECTOR_TIPS.default;
+        return defs[Math.floor(Math.random() * defs.length)];
+    };
+
     const manejarGiro = async () => {
         if (!puedeGirar || mustStartSpinning) return;
 
@@ -82,8 +131,19 @@ const RuletaDiaria = ({ usuarioActual }) => {
 
     const alFinalizarGiro = () => {
         setMustStartSpinning(false);
+        // If prize is the special "Invita-gana" flow
         if (premioGanado && premioGanado.nombre === 'Invita-gana') {
             setMostrarInvitaPopup(true);
+        // If prize looks like a "tip" reward, show a tip preview popup first
+        } else if (premioGanado && /tip|tips|consejo|recomendaci/i.test(premioGanado.nombre)) {
+            // generate tip text and show the tip popup
+            generarTipParaUsuario().then(t => {
+                setTipText(t || 'Revisa tu sección de tips en la tienda para más detalles.');
+                setMostrarTipPopup(true);
+            }).catch(() => {
+                setTipText('Revisa tu sección de tips en la tienda para más detalles.');
+                setMostrarTipPopup(true);
+            });
         } else {
             setMostrarPremio(true);
         }
@@ -163,6 +223,25 @@ const RuletaDiaria = ({ usuarioActual }) => {
                     </div>
                 </div>
             )}
+            {/* Tip popup: muestra un tip breve antes de aceptar la recompensa */}
+            {mostrarTipPopup && (
+                <div className="premio-popup">
+                    <div className="premio-popup-content">
+                        <div className="premio-info">
+                            <h4>Tip rápido</h4>
+                            <p>{tipText}</p>
+                            <p style={{fontSize:12, opacity:0.85, marginTop:8}}>Este tip te fue dado junto con tu recompensa. Pulsa aceptar para continuar.</p>
+                        </div>
+                        <button onClick={() => {
+                            setMostrarTipPopup(false);
+                            // después de cerrar tip, mostrar el popup de recompensa normal
+                            setMostrarPremio(true);
+                        }}>
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            )}
            
             {mostrarRecompensaPopup && (
                 <div className="premio-popup">
@@ -173,6 +252,19 @@ const RuletaDiaria = ({ usuarioActual }) => {
                             <p>+160 puntos</p>
                         </div>
                         <button onClick={() => {
+                            // Cerrar popup y sumar puntos si la recompensa tiene valor
+                            if (premioGanado && premioGanado.valor > 0 && usuarioActual) {
+                                try {
+                                    const nuevosPuntos = (usuarioActual.puntos_totales || 0) + premioGanado.valor;
+                                    const usuarioActualizado = { ...usuarioActual, puntos_totales: nuevosPuntos };
+                                    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                                } catch (e) {
+                                    console.error('Error actualizando puntos en localStorage:', e);
+                                }
+                                // recargar para que la UI muestre los puntos actualizados
+                                window.location.reload();
+                                return;
+                            }
                             setMostrarRecompensaPopup(false);
                             setMostrarPremio(false);
                         }}>
@@ -193,14 +285,20 @@ const RuletaDiaria = ({ usuarioActual }) => {
                             )}
                         </div>
                         <button onClick={() => {
-                            setMostrarPremio(false);
-                           
-                            if (premioGanado.valor === 80 && usuarioActual) {
-                                const nuevosPuntos = (usuarioActual.puntos_totales || 0) + 80;
-                                const usuarioActualizado = { ...usuarioActual, puntos_totales: nuevosPuntos };
-                                localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                            // cerrar popup y sumar puntos si la recompensa tiene valor (generalizado)
+                            if (premioGanado && premioGanado.valor > 0 && usuarioActual) {
+                                try {
+                                    const nuevosPuntos = (usuarioActual.puntos_totales || 0) + premioGanado.valor;
+                                    const usuarioActualizado = { ...usuarioActual, puntos_totales: nuevosPuntos };
+                                    localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+                                } catch (e) {
+                                    console.error('Error actualizando puntos en localStorage:', e);
+                                }
+                                // recargar para que la UI muestre los puntos actualizados
                                 window.location.reload();
+                                return;
                             }
+                            setMostrarPremio(false);
                         }}>
                             Cerrar
                         </button>

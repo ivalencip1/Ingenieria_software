@@ -92,11 +92,11 @@ const Perfil = ({ onVolver, usuarioActual }) => {
       localStorage.removeItem('usuario');
       localStorage.removeItem('magboost_profile_visited');
     } catch (_) {}
-    // Redirigir a la página principal (o login si tu servidor la sirve)
+   
     window.location.href = '/';
   };
 
-  // Guardar cambios de nombre y apellido
+ 
   const guardarNombres = async () => {
     if (!usuarioActual?.id) return;
     const first = (editFirstName || '').trim();
@@ -112,20 +112,18 @@ const Perfil = ({ onVolver, usuarioActual }) => {
       await axios.patch(`http://localhost:8000/api/usuarios/${usuarioActual.id}/`, {
         first_name: first,
         last_name: last,
-        // backend user model uses 'bio' as the field name
         bio: bio,
       });
-      // Actualizar vista local
+   
       const nuevo = { ...perfilData };
       if (nuevo.perfil) {
         nuevo.perfil.first_name = first;
         nuevo.perfil.last_name = last;
         nuevo.perfil.bio = bio;
-        // also update the top-level 'biografia' that perfil_completo returns
         nuevo.biografia = bio;
       }
       setPerfilData(nuevo);
-      // Sincronizar almacenamiento local si existe
+      
       try {
         const uRaw = localStorage.getItem('usuario');
         if (uRaw) {
@@ -134,7 +132,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
         }
       } catch (_) {}
       setSaveMsg('Guardado');
-        // Cerrar el panel de edición al guardar correctamente
+      
         setEditingBasics(false);
       setTimeout(() => setSaveMsg(''), 2000);
     } catch (err) {
@@ -148,7 +146,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
 
   return (
     <div className="perfil-container">
-      {/* Header del perfil */}
+      
       <div className="perfil-header">
         <button
           className="perfil-edit-btn"
@@ -156,7 +154,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
           aria-label={editingBasics ? 'Cerrar edición' : 'Editar perfil'}
           title={editingBasics ? 'Cerrar edición' : 'Editar perfil'}
         >
-          {/* ícono lápiz */}
+        
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
@@ -242,7 +240,7 @@ const Perfil = ({ onVolver, usuarioActual }) => {
 
       
 
-      {/* Edición (se muestra al pulsar el lápiz) */}
+      
       {editingBasics && (
         <div className="editar-nombres-box">
           <h3 className="editar-nombres-title">Editar datos básicos</h3>

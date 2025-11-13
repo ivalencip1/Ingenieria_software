@@ -1,6 +1,7 @@
+/* Avoid redefining body here; use global font (Lato). If needed, fall back to Arial. */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Lato', Arial, sans-serif;
 }
 
 .minigame-container {

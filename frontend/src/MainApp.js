@@ -12,17 +12,14 @@ function MainApp() {
   const [surveyCompleted, setSurveyCompleted] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay usuario en localStorage
     const usuario = authAPI.getCurrentUser();
     if (usuario) {
       setIsAuthenticated(true);
-      // Verificar si la encuesta está completada
       setSurveyCompleted(usuario.survey_completed || false);
     }
     setLoading(false);
   }, []);
 
-  // Escuchar cambios en localStorage
   useEffect(() => {
     const handleStorageChange = () => {
       const usuario = authAPI.getCurrentUser();

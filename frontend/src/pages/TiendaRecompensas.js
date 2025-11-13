@@ -47,13 +47,13 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                 setHistorialDisponible(false);
             }
         } catch (err) {
-            // Si el servidor devuelve 410 o no hay historial, lo consideramos no disponible
+            
             if (err && err.response && err.response.status === 410) {
                 setHistorial([]);
                 setHistorialDisponible(false);
             } else {
                 console.error('Error cargando datos tienda:', err);
-                // no bloquear la UI; mostrar categorías vacías si falló
+              
             }
         } finally {
             setLoading(false);
@@ -80,16 +80,15 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
     };
 
     const openSectorModalForCompra = async (compra) => {
-        // Instead of opening a modal, fetch the sectors saved in the user's profile
-        // and immediately generate tips and mark the purchase as canjeada on the server.
+       
         try {
             const res = await api.get(`/core/perfil-completo/?usuario_id=${usuarioActual?.id}`);
             const perfil = res && res.data && res.data.perfil ? res.data.perfil : null;
             const sectors = (perfil && perfil.sectors) ? perfil.sectors : [];
 
-            // build tips from sectors
+           
             const tips = [];
-            // normalize sector names (lowercase, remove accents) to match keys in SECTOR_TIPS
+            
                 const normalize = (str) => String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
             (sectors.length ? sectors : []).forEach(s => {
                 const key = normalize(s);
@@ -100,7 +99,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
 
             setRecomendaciones(tips.length ? tips : ['No hay tips para tus sectores seleccionados.']);
 
-            // mark purchase as canjeada in server
+          
             if (compra && compra.id) {
                 try {
                     await api.post('/rewards/tienda/canjear/', { compra_id: compra.id });
@@ -109,19 +108,19 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                 }
             }
 
-            // refresh data
+           
             await cargarDatos();
             setMostrarPopup(true);
         } catch (err) {
             console.error('Error fetching perfil for sectors:', err);
-            // fallback: show a generic tip set
+          
             setRecomendaciones(['No pudimos obtener tus sectores. Revisa tu perfil para configurarlos.']);
             setMostrarPopup(true);
         }
     };
 
     const SECTOR_TIPS = {
-        // English keys
+        
         tech: [
             'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
             'Muestra logros cuantificables: proyectos con métricas y resultados.'
@@ -146,7 +145,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
             'Muestra resultados en mejora de ventas y métricas de conversión.',
             'Describe experiencia gestionando objetivos de inventario y equipos.'
         ],
-        // Spanish aliases
+       
         software: [
             'Incluye palabras clave técnicas en tu CV (React, Python, SQL).',
             'Muestra logros cuantificables: proyectos con métricas y resultados.'
@@ -168,16 +167,15 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
             'Incluye logros en optimización de procesos o reducción de costes.'
         ],
         administraciOn: [
-            // fallback in case of accented capital O in some inputs
+           
             'Destaca experiencia en gestión de equipos y procesos administrativos.',
             'Incluye logros en optimización de procesos o reducción de costes.'
         ]
     };
 
-    // note: sector selection modal was removed; tips are generated from profile sectors
 
     const handleBuyCV = async () => {
-        // Intentar localizar la recompensa CV en las categorías y usar el endpoint real
+        
         if (!usuarioActual || !usuarioActual.id) {
             setMensaje({ tipo: 'error', texto: 'Necesitas iniciar sesión para comprar.' });
             setTimeout(() => setMensaje(null), 3000);
@@ -188,7 +186,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
         const cvReward = flatRewards.find(r => r.nombre && r.nombre.toLowerCase().includes('hoja de vida')) || flatRewards.find(r => r.nombre && r.nombre.toLowerCase().includes('cv'));
 
         if (!cvReward) {
-            // Si no existe la recompensa en el backend, informar
+          
             setMensaje({ tipo: 'error', texto: 'La recompensa CV no está disponible en el servidor. Contacta al administrador.' });
             setTimeout(() => setMensaje(null), 3000);
             return;
@@ -198,10 +196,10 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
         try {
             const compraRes = await comprarRecompensa(cvReward.id);
             if (compraRes && compraRes.success) {
-                // compraRes.compra_id contiene el id real en BD
+               
                 setPendingPurchaseId(compraRes.compra_id || null);
                 setMensaje({ tipo: 'success', texto: 'Compra realizada. Ve a Mis Compras para subir tu CV.' });
-                // Mostrar historial para que el usuario suba el CV
+               
                 setVistaActual('historial');
             } else {
                 setMensaje({ tipo: 'error', texto: 'No se pudo completar la compra.' });
@@ -215,7 +213,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
     };
 
     const handleBuyTips = async () => {
-        // Similar to CV buy: find reward named 'tips' and call comprarRecompensa
+        
         if (!usuarioActual || !usuarioActual.id) {
             setMensaje({ tipo: 'error', texto: 'Necesitas iniciar sesión para comprar.' });
             setTimeout(() => setMensaje(null), 3000);
@@ -263,9 +261,9 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                 setMensaje({ tipo: 'success', texto: res.data.mensaje || 'Compra realizada' });
                 // Actualizar puntos y recargar categorías e historial
                 setPuntosUsuario(res.data.puntos_restantes ?? puntosUsuario);
-                // refrescar datos
+        
                 await cargarDatos();
-                // intentar obtener perfil actualizado y notificar al padre
+                
                 try {
                     const perfilRes = await fetch(`http://localhost:8000/api/core/perfil-completo/?usuario_id=${usuarioActual.id}`);
                     if (perfilRes.ok) {
@@ -276,9 +274,9 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                         }
                     }
                 } catch (e) {
-                    // no bloquear si falla
+                   
                 }
-                // devolver datos completos de la compra para uso posterior
+               
                 return res.data || { success: true };
             } else {
                 setMensaje({ tipo: 'error', texto: 'No se pudo completar la compra.' });
@@ -376,7 +374,7 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                             // Simular procesamiento y generar recomendaciones
                                 setTimeout(async ()=>{
                                     try {
-                                        // Si existe una compra pendiente en el servidor, subir el PDF
+                                        
                                         if (pendingPurchaseId && !String(pendingPurchaseId).startsWith('temp-')) {
                                             const fd = new FormData();
                                             fd.append('compra_id', pendingPurchaseId);
@@ -385,11 +383,11 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                                             if (uploadRes && uploadRes.data && uploadRes.data.recomendaciones) {
                                                 setRecomendaciones(uploadRes.data.recomendaciones);
                                             }
-                                            // refrescar historial y puntos desde servidor
+                                           
                                             await cargarDatos();
                                             setPendingPurchaseId(null);
                                         } else {
-                                            // Fallback local recommendations when purchase was simulated
+                                            
                                             const recs = [
                                                 'Incluye un resumen profesional al inicio con tus logros más relevantes.',
                                                 'Usa viñetas para describir logros cuantificables (ej.: "Aumenté ventas 20%" ).',
@@ -531,11 +529,11 @@ const TiendaRecompensas = ({ onVolver, usuarioActual, onActualizarUsuario }) => 
                                     <span className="date">{new Date(compra.fecha_compra).toLocaleDateString()}</span>
                                 </div>
                                 <div className="status">
-                                    {/* For tips and CV allow access even after canjeado; for other rewards show used mark */}
+                                   
                                     {compra.recompensa && compra.recompensa.nombre && compra.recompensa.nombre.toLowerCase().includes('tips') ? (
                                         <button
                                             onClick={() => {
-                                                // If not canjeado, generate and mark; if already canjeado, just show existing tips
+                                                
                                                 openSectorModalForCompra(compra);
                                             }}
                                             style={{

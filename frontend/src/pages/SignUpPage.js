@@ -89,12 +89,10 @@ function SignUpPage({ onSignUpSuccess }) {
       localStorage.setItem('usuario', JSON.stringify(response.user));
       localStorage.setItem('authToken', response.token);
 
-      // Llamar al callback para notificar signup exitoso
       if (onSignUpSuccess) {
         onSignUpSuccess();
       }
 
-      // Redirigir a la encuesta de onboarding
       setTimeout(() => {
         navigate('/onboarding-survey', { 
           replace: true,

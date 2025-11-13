@@ -213,8 +213,9 @@
 }
 
 .buy-btn.disabled {
-    background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.5);
+    /* Disabled buy button: use purple from brand palette instead of white */
+    background: linear-gradient(135deg, #7c00ff 0%, #9548ff 100%);
+    color: #ffffff;
     cursor: not-allowed;
     box-shadow: none;
 }

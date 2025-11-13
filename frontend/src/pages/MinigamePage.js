@@ -7,6 +7,8 @@ const MinigamePage = ({ onVolver, usuarioActual }) => {
   const [sector, setSector] = useState('');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [puedeJugar, setPuedeJugar] = useState(true);
+  const [cargandoVerificacion, setCargandoVerificacion] = useState(true);
   const [puntaje, setPuntaje] = useState(0);
   const [respuestasCorrectas, setRespuestasCorrectas] = useState(0);
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState(null);
@@ -87,7 +89,45 @@ const MinigamePage = ({ onVolver, usuarioActual }) => {
 
   // Cargar preguntas al montar el componente
   useEffect(() => {
-    obtenerPreguntas();
+    let mounted = true;
+    const verificarYObtener = async () => {
+      try {
+        setCargandoVerificacion(true);
+        const res = await fetch(`http://localhost:8000/api/minigame/puede-jugar/?usuario_id=${usuarioActual?.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (mounted) {
+            setPuedeJugar(data.puede_jugar ?? true);
+            if (data.puede_jugar) {
+              // el usuario puede jugar: obtener preguntas normalmente
+              obtenerPreguntas();
+            } else {
+              // el usuario ya jugó hoy: mostrar mensaje y no generar preguntas
+              setError(data.mensaje || 'Ya jugaste hoy. Vuelve mañana.');
+              // asegurarnos de quitar el estado de carga de preguntas para no mostrar el spinner
+              setCargando(false);
+            }
+          }
+        } else {
+          // si la verificación falla, permitimos jugar para no romper la UX
+          if (mounted) {
+            obtenerPreguntas();
+          }
+        }
+      } catch (err) {
+        console.error('Error verificando minijuego:', err);
+        if (mounted) {
+          // permitir jugar en caso de error de red
+          obtenerPreguntas();
+        }
+      } finally {
+        if (mounted) setCargandoVerificacion(false);
+      }
+    };
+
+    verificarYObtener();
+
+    return () => { mounted = false; };
   }, [usuarioActual]);
 
   // Función para manejar respuestas
@@ -151,7 +191,7 @@ const MinigamePage = ({ onVolver, usuarioActual }) => {
     return (
       <div className="minigame-container">
         <div style={{ textAlign: 'center', padding: '50px' }}>
-          <h2>🎮 Cargando preguntas personalizadas...</h2>
+          <h2> Cargando preguntas personalizadas...</h2>
           <p>Generando preguntas para tu sector profesional</p>
         </div>
       </div>
@@ -298,41 +338,7 @@ const MinigamePage = ({ onVolver, usuarioActual }) => {
           ></div>
         </div>
         
-        {preguntas.length > 0 && (
-          <div style={{ textAlign: 'center', marginTop: '10px' }}>
-            <button 
-              onClick={reiniciarJuego}
-              style={{
-                background: '#6a5acd',
-                color: 'white',
-                border: 'none',
-                padding: '8px 15px',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                marginRight: '10px'
-              }}
-            >
-              🔄 Nuevo Juego
-            </button>
-            {juegoTerminado && (
-              <button 
-                onClick={onVolver}
-                style={{
-                  background: '#28a745',
-                  color: 'white',
-                  border: 'none',
-                  padding: '8px 15px',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  fontSize: '12px'
-                }}
-              >
-                🏠 Volver al Inicio
-              </button>
-            )}
-          </div>
-        )}
+        {/* Se removieron los botones 'Nuevo Juego' y 'Volver al Inicio' por requerimiento: el minijuego se bloquea si ya jugaste hoy y no se reusa en sesión */}
       </footer>
     </div>
   );

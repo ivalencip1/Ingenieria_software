@@ -268,28 +268,7 @@ function App() {
           <span style={{fontSize: '20px'}}>🛍️</span>
           Tienda
         </button>
-        <button 
-          onClick={() => cambiarVista('minigame')}
-          style={{
-            padding: '8px 12px',
-            background: 'transparent',
-            color: vistaActual === 'minigame' ? '#7c00ff' : '#667688',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '12px',
-            fontWeight: vistaActual === 'minigame' ? '600' : '400',
-            minWidth: '60px',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          <span style={{fontSize: '20px'}}>🎮</span>
-          Juego
-        </button>
+        {/* Juego button removed from bottom nav as requested */}
         <button 
           onClick={() => cambiarVista('perfil')}
           style={{

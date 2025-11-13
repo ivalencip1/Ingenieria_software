@@ -34,7 +34,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     if (!usuarioActual?.id) return;
     fetch(`http://localhost:8000/api/notifications/usuario/${usuarioActual.id}/tips-perfil/?trigger=misiones_enter`, { method: 'POST' })
       .then(() => {
-        // Avisar a la campana para que recargue el badge/lista
+       
         const ev = new CustomEvent('magboost:new-notifications');
         window.dispatchEvent(ev);
       })
@@ -42,15 +42,13 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
   }, [usuarioActual]);
 
   const completarMision = (misionId) => {
-    // por defecto intentamos completar la misión llamando al backend
-    // para la misión especial "Amigos por siempre" skipearemos la falla aleatoria
+
     setCargando(true);
     setTimeout(() => {
-      // Realizar el POST al backend para completar la misión
-      // Prefer axios client (sends token) but fall back to fetch if needed.
+      
       (async () => {
         try {
-          // Try axios (api) first if token present
+        
           let responseData = null;
           if (localStorage.getItem('token')) {
             const res = await api.post(`/gamification/misiones/${misionId}/completar/`, { usuario_id: usuarioActual?.id });
@@ -87,13 +85,11 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     }, 1200);
   };
 
-  // Intentar completar la misión con reintentos; si falla y es la misión "Amigos por siempre",
-  // marcarla localmente y almacenar en localStorage para intentar sincronizar después.
   const completarMisionWithRetries = async (mision, attempts = 3) => {
     let lastError = null;
     for (let i = 0; i < attempts; i++) {
       try {
-        // attempt with axios if token present, otherwise fetch with credentials
+       
         let data = null;
         let ok = false;
         if (localStorage.getItem('token')) {
@@ -117,7 +113,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
           }
         }
         if (ok && !data.error) {
-          // éxito real: stop loading and refresh (same behavior as other missions)
+         
           setCargando(false);
           alert(`¡Misión completada! +${data.puntos_ganados} MagnetoPoints obtenidos!`);
           try { window.location.reload(); } catch(_) { }
@@ -128,13 +124,13 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       } catch (err) {
         lastError = err;
       }
-      // pequeña espera antes de reintentar
+   
       await new Promise(r => setTimeout(r, 800));
     }
 
-  // Si falló después de reintentos y es la misión de amigos, marcar localmente
+  
     if (mision && mision.titulo && mision.titulo.toLowerCase().includes('amigos')) {
-      // marcar la misión como completada en UI local
+    
       setMisiones(prev => {
         const copy = { ...prev };
         ['retos_diarios','retos_semanales','retos_mensuales'].forEach(key => {
@@ -146,7 +142,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
         return copy;
       });
 
-      // encolar sync pendiente en localStorage
+ 
       try {
         const pendingRaw = localStorage.getItem('magboost_pending_completions');
         const pending = pendingRaw ? JSON.parse(pendingRaw) : [];
@@ -157,7 +153,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
       alert('No se pudo conectar con Magneto, pero la misión ha sido marcada como completada localmente y se intentará sincronizar más tarde.');
       setCargando(false);
       setProgress(100);
-      // keep old behavior: show simple message and stop loading
+   
       return;
     }
 
@@ -175,16 +171,16 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
   };
 
   const handleCompletarClick = (mision) => {
-    // Si es la misión especial 'Amigos por siempre' mostramos el popup previo
+   
     if (mision && mision.titulo && mision.titulo.toLowerCase().includes('amigos')) {
       setMisionPendiente(mision);
       setMostrarPopup(true);
       return;
     }
-    // Para el resto de misiones iniciamos la carga normal
+   
     iniciarCargaMision(mision.id);
   };
-  // Progress simulation for loading card
+ 
   useEffect(() => {
     let t = null;
     if (cargando) {
@@ -198,7 +194,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     return () => { if (t) clearInterval(t); };
   }, [cargando]);
 
-  // Si estamos cargando, mostrar la antigua pantalla simple (se usa para todas las misiones ahora)
+  
   if (cargando) {
     return (
       <div className="misiones-loading-overlay">
@@ -221,7 +217,7 @@ function MisionesPage({ onVolver, usuarioActual, onActualizarUsuario }) {
     );
   }
 
-  // Popup previo para Amigos por siempre
+  
   if (mostrarPopup && misionPendiente) {
     const link = 'https://login.magneto365.com/candidates?utm_source=google&utm_medium=cpc&utm_campaign=grupo-exito&utm_content=maxp-ads-27-20241203-panaderia&gclid=Cj0KCQiA5abIBhCaARIsAM3-zFXpWtr0uX1NJXK8CtsIlhzQKpOg3N--f4Wy8RGZIPM-Rxh09Rzaq_caAp6zEALw_wcB';
     const handleShare = () => {

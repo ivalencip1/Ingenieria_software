@@ -25,16 +25,16 @@ function LoginPage({ onLoginSuccess }) {
         return;
       }
 
-      // Guardar usuario en localStorage
+    
       localStorage.setItem('usuario', JSON.stringify(response.user));
       localStorage.setItem('token', response.token);
 
-      // Llamar al callback para notificar login exitoso
+     
       if (onLoginSuccess) {
         onLoginSuccess();
       }
 
-      // Redirigir al dashboard
+   
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
       }, 100);

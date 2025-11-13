@@ -216,7 +216,7 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
 
       const data = await response.json();
       
-      // Actualizar usuario en localStorage con survey_completed = true
+      
       const usuarioActualizado = {
         ...data.user,
         survey_completed: true
@@ -225,7 +225,7 @@ const OnboardingSurvey = ({ usuarioId, onComplete }) => {
 
       setCompleted(true);
       
-      // Redirigir al dashboard después de 2 segundos
+      
       setTimeout(() => {
         navigate('/dashboard', { replace: true });
       }, 2000);
