@@ -9,7 +9,7 @@ El objetivo es transformar las tareas del día a día en una experiencia más di
 - *Samuel Herrera Galvis*  
 - *Laura Indabur García*  
 - *Isabela Valencia Pino*  
-- *Samuel Llano Mdrigal*  
+- *Samuel Llano Madrigal*  
 - *Isaak Kerguelen Porras*  
 
 ---
